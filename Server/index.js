@@ -1,20 +1,27 @@
-const http = require("http");
+const dotenv = require('dotenv');
+dotenv.config();
 
-// PORT
-const PORT = 5000;
+const express = require('express');
 
-// server create
-const server = http.createServer((req, res) => {
-   if (req.url === "/" || req.url === "/home") {
-      res.write("This is home page.");
-      res.end();
-   } else {
-      res.write("Not Found!");
-      res.end();
-   }
+const app = express();
+
+app.get('/endpoint-1', (req, res, next) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      message: 'Hello from endpoint 1',
+    },
+  });
 });
 
-// server listen port
-server.listen(PORT);
+app.get('/endpoint-2', (req, res, next) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      message: 'Hello from endpoint 2',
+    },
+  });
+});
 
-console.log(`Server is running on PORT: ${PORT}`);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server is running on this port ${PORT}`));

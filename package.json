@@ -1,0 +1,19 @@
+{
+  "name": "tsa-game-design-2022-23",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PandaGamerPlayzz/TSA-Game-Design-2022-23.git"
+  },
+  "author": "Zachary A. Miller",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PandaGamerPlayzz/TSA-Game-Design-2022-23/issues"
+  },
+  "homepage": "https://github.com/PandaGamerPlayzz/TSA-Game-Design-2022-23#readme"
+}

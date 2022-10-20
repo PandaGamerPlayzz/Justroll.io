@@ -1,8 +1,8 @@
 {
   "name": "tsa-game-design-2022-23",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "TSA Video Game Design 2022-23",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

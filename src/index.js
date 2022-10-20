@@ -30,12 +30,3 @@ app.use(function(err, req, res, next) {
 });
 
 app.listen(PORT, () => console.log(`Server is running port ${PORT}`));
-
-// app.get('/endpoint-1', (req, res, next) => {
-//   res.status(200).json({
-//     success: true,
-//     data: {
-//       message: 'Hello from endpoint 1',
-//     },
-//   });
-// });

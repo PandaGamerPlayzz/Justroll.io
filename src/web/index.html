@@ -1,24 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <script src="/socket.io/socket.io.js"></script>
-        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script type="module" src="/src/js/Main.js" defer></script>
+
+        <link rel="stylesheet" type="text/css" href="/src/css/Main.css">
 
         <title>IO Game</title>
     </head>
     <body>
-        <h1 id="title"></h1>
-        
-        <script>
-            $(function() {
-                var socket = io();
-
-                socket.emit('test');
-
-                socket.on('test', (res) => {
-                   document.getElementById('title').innerText = res
-                });
-            });
-        </script>
+        <canvas id="canvas"></canvas>
     </body>
 </html>

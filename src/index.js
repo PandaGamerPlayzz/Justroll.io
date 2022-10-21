@@ -14,8 +14,14 @@ let lastClientId = 0;
 let clients = {};
 let servers = {};
 
-app.get('*', (req, res, next) => {
-    res.sendFile(WEB_PATH + req.url.substring(1));
+app.get('*', function(req, res, next) {
+    try {
+        res.sendFile(WEB_PATH + req.url.substring(1));
+    } catch (error) {
+        var err = new Error();
+        err.status = 404;
+        next(err);
+    }
 });
 
 app.use(function(err, req, res, next) {
@@ -56,7 +62,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createServer', (serverName) => {
-        CreateServer(socket, clientId, serverName);
+        CreateServer(socket, clientId, serverName)
     });
 
     socket.on('disconnect', () => {

@@ -1,4 +1,3 @@
-import { MenuScreen } from './Classes/Menu/MenuScreen.js';
 import { Player } from './Classes/Player.js';
 
 let canvas = document.getElementById('canvas');
@@ -8,11 +7,19 @@ let game;
 
 class Game {
     constructor(width, height) {
-        this.menuScreen = new MenuScreen(game);
         this.pressedKeys = [];
         this.mouseDown = false;
         this.mouseX = 0;
         this.mouseY = 0;
+
+        this.connections = {
+            'onMouseMove': [],
+            'onMouseUp': [],
+            'onMouseDown': [],
+            'onKeyDown': [],
+            'onKeyUp': [],
+            'onStep': []
+        };
 
         this.resize(width, height);
     }
@@ -25,7 +32,7 @@ class Game {
     }
 
     update() {
-        if(this.menuScreen) this.menuScreen.update();
+        
     }
 
     draw(ctx) {
@@ -40,28 +47,64 @@ class Game {
     }
 
     onMouseMove(event, game=this) {
-        
+        for (let element of game.connections['onMouseMove']) {
+            let func = element[0];
+            let object = element[1];
+
+            func(game.mouseX, game.mouseY, game=game)
+        }
     }
 
     onMouseDown(event, game=this) {
-        
+        for (let element of game.connections['onMouseDown']) {
+            let func = element[0];
+            let object = element[1];
+
+            func(game.mouseX, game.mouseY, object=object)
+        }
     }
 
     onMouseUp(event, game=this) {
-        if(game.menuScreen) game.menuScreen.focusBox(game.mouseX, game.mouseY);
+        for (let element of game.connections['onMouseUp']) {
+            let func = element[0];
+            let object = element[1];
+
+            func(game.mouseX, game.mouseY, object=object)
+        }
     }
 
     onKeyDown(event, game=this) {
-        if(game.menuScreen) game.menuScreen.receiveKeyboardFeed(event.key);
+        for (let element of game.connections['onKeyDown']) {
+            let func = element[0];
+            let object = element[1];
+
+            func(event, object=object)
+        }
     }
 
     onKeyUp(event, game=this) {
-        
+        for (let element of game.connections['onKeyUp']) {
+            let func = element[0];
+            let object = element[1];
+
+            func(event, object=object)
+        }
     }
 
     onStep(timestamp, game=this) {
+        for (let element of game.connections['onStep']) {
+            let func = element[0];
+            let object = element[1];
+
+            func(timestamp, object=object)
+        }
+
         game.update();
         game.draw(ctx);
+    }
+
+    connect(functionName, callback, object, game=this) {
+        game.connections[functionName].push([callback, object]);
     }
 }
 

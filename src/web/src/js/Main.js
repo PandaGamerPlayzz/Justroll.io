@@ -1,5 +1,8 @@
 import { Player } from './Classes/Player.js';
 
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 
@@ -108,16 +111,43 @@ class Game {
     }
 }
 
+function GenerateJoinCode() {
+    let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let code = '';
+
+    for (let i = 0; i < 6; i++) {
+        code += characters.charAt(Math.floor(Math.random() * characters.length));
+
+        if(i == 2) code += '-';
+    }
+
+    window.location.href += '?c=' + code;
+
+    return code;
+}
+
 function Main() {
     var socket = io();
     var clientId;
+
+    var joinCode = urlParams.get('c') || GenerateJoinCode();
 
     game = new Game(canvas.width, canvas.height);
 
     // Socket events
 
+    socket.on('redirect', (url) => {
+        window.location.href = url;
+    });
+
+    socket.on('serverJoined', (server) => {
+        console.log(server);
+    });
+
     socket.on('connectionMade', (res) => {
        clientId = res.clientId;
+
+       socket.emit('joinServer', joinCode);
     }); 
 
     // Listener events

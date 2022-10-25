@@ -15,6 +15,8 @@ class Game {
         this.mouseX = 0;
         this.mouseY = 0;
 
+        this.server = null;
+
         this.connections = {
             'onMouseMove': [],
             'onMouseUp': [],
@@ -39,7 +41,7 @@ class Game {
     }
 
     draw(ctx) {
-        if (ctx) {
+        if(ctx) {
             ctx.beginPath();
             ctx.rect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = 'rgb(0, 0, 0)';
@@ -50,7 +52,7 @@ class Game {
     }
 
     onMouseMove(event, game=this) {
-        for (let element of game.connections['onMouseMove']) {
+        for(let element of game.connections['onMouseMove']) {
             let func = element[0];
             let object = element[1];
 
@@ -59,7 +61,7 @@ class Game {
     }
 
     onMouseDown(event, game=this) {
-        for (let element of game.connections['onMouseDown']) {
+        for(let element of game.connections['onMouseDown']) {
             let func = element[0];
             let object = element[1];
 
@@ -68,7 +70,7 @@ class Game {
     }
 
     onMouseUp(event, game=this) {
-        for (let element of game.connections['onMouseUp']) {
+        for(let element of game.connections['onMouseUp']) {
             let func = element[0];
             let object = element[1];
 
@@ -77,7 +79,7 @@ class Game {
     }
 
     onKeyDown(event, game=this) {
-        for (let element of game.connections['onKeyDown']) {
+        for(let element of game.connections['onKeyDown']) {
             let func = element[0];
             let object = element[1];
 
@@ -86,7 +88,7 @@ class Game {
     }
 
     onKeyUp(event, game=this) {
-        for (let element of game.connections['onKeyUp']) {
+        for(let element of game.connections['onKeyUp']) {
             let func = element[0];
             let object = element[1];
 
@@ -95,7 +97,7 @@ class Game {
     }
 
     onStep(timestamp, game=this) {
-        for (let element of game.connections['onStep']) {
+        for(let element of game.connections['onStep']) {
             let func = element[0];
             let object = element[1];
 
@@ -115,7 +117,7 @@ function GenerateJoinCode() {
     let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let code = '';
 
-    for (let i = 0; i < 6; i++) {
+    for(let i = 0; i < 6; i++) {
         code += characters.charAt(Math.floor(Math.random() * characters.length));
 
         if(i == 2) code += '-';
@@ -141,7 +143,13 @@ function Main() {
     });
 
     socket.on('serverJoined', (server) => {
-        console.log(server);
+        game.server = server;
+    });
+
+    socket.on('serverUpdate', (data) => {
+        if(data.code == 'full') game.server = data.server;
+
+        console.log(game.server);
     });
 
     socket.on('connectionMade', (res) => {
@@ -200,7 +208,7 @@ function GetMousePos(event) {
         y: event.clientY - rect.top
     };
 
-    if (game) {
+    if(game) {
         game.mouseX = mousePos.x;
         game.mouseY = mousePos.y;
     }

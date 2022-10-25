@@ -25,7 +25,7 @@ app.get('*', function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    if (err.status === 404) {
+    if(err.status === 404) {
         res.status(200).json({
             error: 404
         })
@@ -52,7 +52,7 @@ function CreateServer(socket, clientId, serverCode) {
 }
 
 function JoinServer(socket, clientId, serverCode) {
-    server = servers[serverCode];
+    let server = servers[serverCode];
 
     server.clients[clientId] = {
         clientId: clientId
@@ -61,7 +61,25 @@ function JoinServer(socket, clientId, serverCode) {
     if(server.ownerClientId === null) server.ownerClientId = clientId;
     clients[clientId].currentServerCode = serverCode;
 
+    FullUpdateAllSockets(serverCode);
+
     return server;
+}
+
+function FullUpdateAllSockets(serverCode) {
+    let server = servers[serverCode];
+
+    if(server) {
+        for(let [clientId, _] of Object.entries(server.clients)) {
+            let client = clients[clientId];
+            let clientSocket = client.socket;
+    
+            clientSocket.emit('serverUpdate', {
+                code: 'full',
+                server: server
+            });
+        }
+    }
 }
 
 io.on('connection', (socket) => {
@@ -80,27 +98,29 @@ io.on('connection', (socket) => {
     socket.on('joinServer', (serverCode) => {
         if(!(serverCode in servers)) CreateServer(socket, clientId, serverCode);
         socket.emit('serverJoined', JoinServer(socket, clientId, serverCode));
-
-        console.log(servers);
     });
 
     socket.on('disconnect', () => {
-        if (clients[clientId].currentServerCode !== null) {
+        if(clients[clientId].currentServerCode !== null) {
             let server = servers[clients[clientId].currentServerCode];
 
             if(server !== undefined) {
                 delete server.clients[clientId];
                 if(server.ownerClientId == clientId) {
-                    for (let [ redirectClientId, _ ] in server.clients) {
-                        clientSocket = clients[redirectClientId].socket;
-                        clientSocket.emit('redirect', '/play/menu/?s=ownerleft');
+                    if(Object.keys(server.clients).length > 0) {
+                        server.ownerClientId = server.clients[Object.keys(server.clients)[0]].clientId;
+                    } else {
+                        for(let [ redirectClientId, _ ] in server.clients) {
+                            clientSocket = clients[redirectClientId].socket;
+                            clientSocket.emit('redirect', '/play/menu/?s=ownerleft');
+                        }
+    
+                        delete servers[clients[clientId].currentServerCode];
                     }
-
-                    delete servers[clients[clientId].currentServerCode]
                 };
             }
 
-            console.log(servers);
+            FullUpdateAllSockets(clients[clientId].currentServerCode);
         }
 
         delete clients[clientId];

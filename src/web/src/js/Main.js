@@ -11,12 +11,16 @@ var socket;
 var clientId;
 var joinCode;
 
+let speed = 35;
+
 class Game {
     constructor(socket, width, height) {
         this.pressedKeys = [];
         this.mouseDown = false;
         this.mouseX = 0;
         this.mouseY = 0;
+
+        this.lastTimestamp = 0;
 
         this.socket = socket;
         this.server = null;
@@ -42,7 +46,7 @@ class Game {
         this.draw();
     }
 
-    update() {
+    update(dt) {
         if(this.server !== null) {
             for(let [otherClientId, client] of Object.entries(this.server.clients)) {
                 if(!(otherClientId in this.players)) {
@@ -67,19 +71,19 @@ class Game {
         }
 
         if(this.isAnyKeyDown('w', 'W')) {
-            this.player.incrementPosition(0, -1);
+            this.player.incrementPosition(0, -speed * dt);
         }
 
         if(this.isAnyKeyDown('a', 'A')) {
-            this.player.incrementPosition(-1, 0);
+            this.player.incrementPosition(-speed * dt, 0);
         }
 
         if(this.isAnyKeyDown('s', 'S')) {
-            this.player.incrementPosition(0, 1);
+            this.player.incrementPosition(0, speed * dt);
         }
     
         if(this.isAnyKeyDown('d', 'D')) {
-            this.player.incrementPosition(1, 0);
+            this.player.incrementPosition(speed * dt, 0);
         }
     }
 
@@ -150,6 +154,8 @@ class Game {
     }
 
     onStep(timestamp, game=this) {
+        let dt = (timestamp - this.lastTimestamp) / 100;
+
         for(let element of game.connections['onStep']) {
             let func = element[0];
             let object = element[1];
@@ -157,8 +163,10 @@ class Game {
             func(timestamp, object=object)
         }
 
-        game.update();
+        game.update(dt);
         game.draw(ctx);
+
+        this.lastTimestamp = timestamp
     }
 
     connect(functionName, callback, object, game=this) {

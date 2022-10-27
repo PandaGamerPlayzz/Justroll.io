@@ -118,6 +118,9 @@ io.on('connection', (socket) => {
 
         switch(data.code) {
             case 'position':
+                server.clients[data.clientId].data.x = data.x;
+                server.clients[data.clientId].data.y = data.y;
+
                 socket.broadcast.emit('serverUpdate', {
                     code: 'position',
                     clientId: data.clientId,

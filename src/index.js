@@ -41,6 +41,10 @@ http.listen(PORT, () => {
     console.log(`Server is running at port ${port}`);
 });
 
+function randrange(min, max) {
+    return Math.floor(Math.random() * max) + min;
+}
+
 function CreateServer(socket, clientId, serverCode) {
     servers[serverCode] = {
         ownerClientId: null,
@@ -51,11 +55,12 @@ function CreateServer(socket, clientId, serverCode) {
     return servers[serverCode];
 }
 
-function JoinServer(socket, clientId, serverCode) {
+function JoinServer(socket, clientId, serverCode, clientData) {
     let server = servers[serverCode];
 
     server.clients[clientId] = {
-        clientId: clientId
+        clientId: clientId,
+        data: clientData
     };
 
     if(server.ownerClientId === null) server.ownerClientId = clientId;
@@ -86,6 +91,8 @@ io.on('connection', (socket) => {
     const clientId = lastClientId;
     lastClientId += 1;
 
+    let color = [randrange(0, 255), randrange(0, 255), randrange(0, 255)];
+
     clients[clientId] = {
         socket: socket,
         currentServerCode: null
@@ -97,7 +104,29 @@ io.on('connection', (socket) => {
 
     socket.on('joinServer', (serverCode) => {
         if(!(serverCode in servers)) CreateServer(socket, clientId, serverCode);
-        socket.emit('serverJoined', JoinServer(socket, clientId, serverCode));
+        socket.emit('serverJoined', JoinServer(socket, clientId, serverCode, {
+            color: color,
+            x: 100,
+            y: 100
+        }));
+    });
+
+    socket.on('clientUpdate', (data) => {
+        let server = servers[clients[clientId].currentServerCode];
+
+        if(server == undefined) return;
+
+        switch(data.code) {
+            case 'position':
+                socket.broadcast.emit('serverUpdate', {
+                    code: 'position',
+                    clientId: data.clientId,
+                    x: data.x,
+                    y: data.y
+                });
+
+                break;
+        }
     });
 
     socket.on('disconnect', () => {
@@ -110,8 +139,8 @@ io.on('connection', (socket) => {
                     if(Object.keys(server.clients).length > 0) {
                         server.ownerClientId = server.clients[Object.keys(server.clients)[0]].clientId;
                     } else {
-                        for(let [ redirectClientId, _ ] in server.clients) {
-                            clientSocket = clients[redirectClientId].socket;
+                        for(let [redirectClientId, _] in Object.entries(server.clients)) {
+                            let clientSocket = clients[redirectClientId].socket;
                             clientSocket.emit('redirect', '/play/menu/?s=ownerleft');
                         }
     

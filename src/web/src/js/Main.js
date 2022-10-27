@@ -6,16 +6,22 @@ const urlParams = new URLSearchParams(queryString);
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 
-let game;
+var game;
+var socket;
+var clientId;
+var joinCode;
 
 class Game {
-    constructor(width, height) {
+    constructor(socket, width, height) {
         this.pressedKeys = [];
         this.mouseDown = false;
         this.mouseX = 0;
         this.mouseY = 0;
 
+        this.socket = socket;
         this.server = null;
+        this.players = {};
+        this.player = null;
 
         this.connections = {
             'onMouseMove': [],
@@ -37,7 +43,44 @@ class Game {
     }
 
     update() {
-        
+        if(this.server !== null) {
+            for(let [otherClientId, client] of Object.entries(this.server.clients)) {
+                if(!(otherClientId in this.players)) {
+                    let newPlayer = new Player(this, otherClientId, client.data.color);
+
+                    newPlayer.x = client.data.x;
+                    newPlayer.y = client.data.y;
+
+                    this.players[otherClientId] = newPlayer;
+                    if(otherClientId == clientId) this.player = newPlayer;
+
+                    console.log('Player Joined:', newPlayer);
+                }
+            }
+        }
+
+        for(let [playerClientId, _] of Object.entries(this.players)) {
+            if(Object.keys(this.server.clients).includes(playerClientId.toString()) == false) {
+                console.log('Player Disconnected:', this.players[playerClientId]);
+                delete this.players[playerClientId];
+            }
+        }
+
+        if(this.isAnyKeyDown('w', 'W')) {
+            this.player.incrementPosition(0, -1);
+        }
+
+        if(this.isAnyKeyDown('a', 'A')) {
+            this.player.incrementPosition(-1, 0);
+        }
+
+        if(this.isAnyKeyDown('s', 'S')) {
+            this.player.incrementPosition(0, 1);
+        }
+    
+        if(this.isAnyKeyDown('d', 'D')) {
+            this.player.incrementPosition(1, 0);
+        }
     }
 
     draw(ctx) {
@@ -47,8 +90,18 @@ class Game {
             ctx.fillStyle = 'rgb(0, 0, 0)';
             ctx.fill();
 
-            if(this.menuScreen) this.menuScreen.draw(ctx);
+            for(let [_, player] of Object.entries(this.players)) {
+                player.draw(ctx);
+            }
         }
+    }
+
+    isAnyKeyDown(...keys) {
+        for(let i = 0; i < keys.length; i++) {
+            if(this.pressedKeys.includes(keys[i])) return true;
+        }
+
+        return false;
     }
 
     onMouseMove(event, game=this) {
@@ -129,12 +182,10 @@ function GenerateJoinCode() {
 }
 
 function Main() {
-    var socket = io();
-    var clientId;
+    socket = io();
+    joinCode = urlParams.get('c') || GenerateJoinCode();
 
-    var joinCode = urlParams.get('c') || GenerateJoinCode();
-
-    game = new Game(canvas.width, canvas.height);
+    game = new Game(socket, canvas.width, canvas.height);
 
     // Socket events
 
@@ -147,13 +198,23 @@ function Main() {
     });
 
     socket.on('serverUpdate', (data) => {
-        if(data.code == 'full') game.server = data.server;
+        switch(data.code) {
+            case 'full':
+                game.server = data.server;
 
-        console.log(game.server);
+                break;
+            case 'position':
+                let client = game.server.clients[data.clientId];
+
+                client.data.x = game.players[data.clientId].x = data.x;
+                client.data.y = game.players[data.clientId].y = data.y;
+
+                break;
+        }
     });
 
-    socket.on('connectionMade', (res) => {
-       clientId = res.clientId;
+    socket.on('connectionMade', (data) => {
+       clientId = data.clientId;
 
        socket.emit('joinServer', joinCode);
     }); 

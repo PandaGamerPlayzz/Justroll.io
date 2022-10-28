@@ -1,5 +1,7 @@
 import { Player } from './Classes/Player.js';
 
+const DOM_URL = window.URL || window.webkitURL || window;
+
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 

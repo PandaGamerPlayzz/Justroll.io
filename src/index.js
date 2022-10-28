@@ -10,6 +10,8 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
+const eg_colors = ['Salmon'];
+
 let lastClientId = 0;
 let clients = {};
 let servers = {};
@@ -91,7 +93,8 @@ io.on('connection', (socket) => {
     const clientId = lastClientId;
     lastClientId += 1;
 
-    let color = [randrange(0, 255), randrange(0, 255), randrange(0, 255)];
+    let color = eg_colors[Math.floor(Math.random() * eg_colors.length)];
+    let randomRGB = [randrange(0, 255), randrange(0, 255), randrange(0, 255)];
 
     clients[clientId] = {
         socket: socket,
@@ -105,6 +108,7 @@ io.on('connection', (socket) => {
     socket.on('joinServer', (serverCode) => {
         if(!(serverCode in servers)) CreateServer(socket, clientId, serverCode);
         socket.emit('serverJoined', JoinServer(socket, clientId, serverCode, {
+            randomRGB: randomRGB,
             color: color,
             x: 100,
             y: 100

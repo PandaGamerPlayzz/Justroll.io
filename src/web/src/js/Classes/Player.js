@@ -1,6 +1,3 @@
-let eg_img = new Image();
-eg_img.src = '/src/img/svg/Eg/Eg.svg';
-
 function getEgImages() {
     let path = '/src/img/svg/Eg/';
     let img_names = ['Eg_White.svg', 'Eg_Salmon.svg'];

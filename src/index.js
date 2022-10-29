@@ -10,7 +10,7 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
-const eg_colors = ['Salmon'];
+const eg_colors = ['Salmon', 'Cyan', 'Lime', 'Magenta', 'Purple'];
 
 let lastClientId = 0;
 let clients = {};

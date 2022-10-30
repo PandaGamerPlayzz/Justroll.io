@@ -10,7 +10,7 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
-const eg_colors = ['Salmon', 'Cyan', 'Lime', 'Magenta', 'Purple'];
+const eg_colors = ['Salmon', 'Cyan', 'Lime', 'Magenta', 'Purple', 'Blue', 'Yellow', 'Orange'];
 
 let lastClientId = 0;
 let clients = {};
@@ -47,18 +47,22 @@ function randrange(min, max) {
     return Math.floor(Math.random() * max) + min;
 }
 
-function CreateServer(socket, clientId, serverCode) {
+function CreateServer(serverCode) {
     servers[serverCode] = {
         ownerClientId: null,
         serverCode: serverCode,
+        eg_colors: eg_colors,
         clients: {}
     };
 
     return servers[serverCode];
 }
 
-function JoinServer(socket, clientId, serverCode, clientData) {
+function JoinServer(clientId, serverCode, clientData) {
     let server = servers[serverCode];
+
+    clientData.color = server.eg_colors[Math.floor(Math.random() * eg_colors.length)];
+    server.eg_colors.splice(server.eg_colors.indexOf(clientData.color), 1);
 
     server.clients[clientId] = {
         clientId: clientId,
@@ -71,6 +75,30 @@ function JoinServer(socket, clientId, serverCode, clientData) {
     FullUpdateAllSockets(serverCode);
 
     return server;
+}
+
+function LeaveServer(clientId) {
+    let server = servers[clients[clientId].currentServerCode];
+
+    if(server !== undefined) {
+        server.eg_colors.push(server.clients[clientId].data.color);
+        delete server.clients[clientId];
+
+        if(server.ownerClientId == clientId) {
+            if(Object.keys(server.clients).length > 0) {
+                server.ownerClientId = server.clients[Object.keys(server.clients)[0]].clientId;
+            } else {
+                for(let [redirectClientId, _] in Object.entries(server.clients)) {
+                    let clientSocket = clients[redirectClientId].socket;
+                    clientSocket.emit('redirect', '/play/menu/?s=ownerleft');
+                }
+    
+                delete servers[clients[clientId].currentServerCode];
+            }
+        };
+    }
+
+    FullUpdateAllSockets(clients[clientId].currentServerCode);
 }
 
 function FullUpdateAllSockets(serverCode) {
@@ -93,7 +121,6 @@ io.on('connection', (socket) => {
     const clientId = lastClientId;
     lastClientId += 1;
 
-    let color = eg_colors[Math.floor(Math.random() * eg_colors.length)];
     let randomRGB = [randrange(0, 255), randrange(0, 255), randrange(0, 255)];
 
     clients[clientId] = {
@@ -106,10 +133,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('joinServer', (serverCode) => {
-        if(!(serverCode in servers)) CreateServer(socket, clientId, serverCode);
-        socket.emit('serverJoined', JoinServer(socket, clientId, serverCode, {
+        if(!(serverCode in servers)) CreateServer(serverCode);
+        socket.emit('serverJoined', JoinServer(clientId, serverCode, {
             randomRGB: randomRGB,
-            color: color,
             x: 100,
             y: 100
         }));
@@ -137,27 +163,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        if(clients[clientId].currentServerCode !== null) {
-            let server = servers[clients[clientId].currentServerCode];
-
-            if(server !== undefined) {
-                delete server.clients[clientId];
-                if(server.ownerClientId == clientId) {
-                    if(Object.keys(server.clients).length > 0) {
-                        server.ownerClientId = server.clients[Object.keys(server.clients)[0]].clientId;
-                    } else {
-                        for(let [redirectClientId, _] in Object.entries(server.clients)) {
-                            let clientSocket = clients[redirectClientId].socket;
-                            clientSocket.emit('redirect', '/play/menu/?s=ownerleft');
-                        }
-    
-                        delete servers[clients[clientId].currentServerCode];
-                    }
-                };
-            }
-
-            FullUpdateAllSockets(clients[clientId].currentServerCode);
-        }
+        if(clients[clientId].currentServerCode !== null) LeaveServer(clientId);
 
         delete clients[clientId];
     });

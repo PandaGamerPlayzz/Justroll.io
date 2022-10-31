@@ -16,8 +16,6 @@ var socket;
 var clientId;
 var joinCode;
 
-let speed = 35;
-
 class Game {
     constructor(socket, width, height) {
         this.pressedKeys = [];
@@ -70,30 +68,16 @@ class Game {
             }
         }
 
-        for(let [playerClientId, _] of Object.entries(this.players)) {
+        this.levelLoader.update(dt);
+
+        for(let [playerClientId, player] of Object.entries(this.players)) {
+            player.update(dt);
+
             if(Object.keys(this.server.clients).includes(playerClientId.toString()) == false) {
                 console.log('Player Disconnected:', this.players[playerClientId]);
                 delete this.players[playerClientId];
             }
         }
-
-        if(this.isAnyKeyDown('w', 'W')) {
-            this.player.incrementPosition(0, -speed * dt);
-        }
-
-        if(this.isAnyKeyDown('a', 'A')) {
-            this.player.incrementPosition(-speed * dt, 0);
-        }
-
-        if(this.isAnyKeyDown('s', 'S')) {
-            this.player.incrementPosition(0, speed * dt);
-        }
-    
-        if(this.isAnyKeyDown('d', 'D')) {
-            this.player.incrementPosition(speed * dt, 0);
-        }
-
-        this.levelLoader.update(dt);
     }
 
     draw(ctx) {

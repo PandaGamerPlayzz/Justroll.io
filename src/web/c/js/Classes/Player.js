@@ -1,3 +1,5 @@
+let elements = document.getElementById('elements');
+
 function getEgImages() {
     let path = '/c/img/svg/Eg/';
     let img_names = ['Eg_White.svg', 'Eg_Salmon.svg', 'Eg_Cyan.svg', 'Eg_Lime.svg', 'Eg_Magenta.svg', 'Eg_Purple.svg', 'Eg_Blue.svg', 'Eg_Yellow.svg', 'Eg_Orange.svg'];
@@ -6,12 +8,16 @@ function getEgImages() {
     for(let i = 0; i < img_names.length; i++) {
         eg_imgs[img_names[i]] = new Image();
         eg_imgs[img_names[i]].src = path + img_names[i];
+
+        elements.appendChild(eg_imgs[img_names[i]]);
     }
 
     return eg_imgs;
 }
 
 let eg_imgs = getEgImages();
+
+let speed = 35;
 
 export class Player {
     constructor(game, clientId, color='White') {
@@ -26,13 +32,27 @@ export class Player {
         this.color = color;
     }
 
-    update() {
+    update(dt) {
+        if(this.game.isAnyKeyDown('w', 'W')) {
+            this.incrementPosition(0, -speed * dt);
+        }
 
+        if(this.game.isAnyKeyDown('a', 'A')) {
+            this.incrementPosition(-speed * dt, 0);
+        }
+
+        if(this.game.isAnyKeyDown('s', 'S')) {
+            this.incrementPosition(0, speed * dt);
+        }
+    
+        if(this.game.isAnyKeyDown('d', 'D')) {
+            this.incrementPosition(speed * dt, 0);
+        }
     }
 
     draw(ctx) {
         ctx.beginPath();
-        ctx.drawImage(this.eg_img, this.x, this.y, 118 * 0.5, 150 * 0.5);
+        ctx.drawImage(this.eg_img, this.x, this.y, 118 * 0.65, 150 * 0.65);
     }
 
     incrementPosition(x, y) {
@@ -44,6 +64,6 @@ export class Player {
             clientId: this.clientId,
             x: this.x,
             y: this.y
-        })
+        });
     }
 }

@@ -1,5 +1,5 @@
 function getEgImages() {
-    let path = '/src/img/svg/Eg/';
+    let path = '/c/img/svg/Eg/';
     let img_names = ['Eg_White.svg', 'Eg_Salmon.svg', 'Eg_Cyan.svg', 'Eg_Lime.svg', 'Eg_Magenta.svg', 'Eg_Purple.svg', 'Eg_Blue.svg', 'Eg_Yellow.svg', 'Eg_Orange.svg'];
     let eg_imgs = {};
 

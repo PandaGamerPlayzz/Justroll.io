@@ -1,10 +1,10 @@
 import { Level } from './Level.js';
 
 let lobbyBackground = new Image();
-lobbyBackground.src = '/src/img/svg/Levels/Lobby/Lobby_Background.svg';
+lobbyBackground.src = '/c/img/svg/Levels/Lobby/Lobby_Background.svg';
 
 let lobbyForeground = new Image();
-lobbyForeground.src = '/src/img/svg/Levels/Lobby/Lobby_Foreground.svg';
+lobbyForeground.src = '/c/img/svg/Levels/Lobby/Lobby_Foreground.svg';
 
 export class Level_Lobby extends Level {
     constructor(game) {

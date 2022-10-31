@@ -33,10 +33,6 @@ export class Player {
     draw(ctx) {
         ctx.beginPath();
         ctx.drawImage(this.eg_img, this.x, this.y, 118 * 0.5, 150 * 0.5);
-
-        // ctx.rect(this.x, this.y, 35, 35);
-        // ctx.fillStyle = `rgb(${this.color[0]}, ${this.color[1]}, ${this.color[2]})`;
-        // ctx.fill();
     }
 
     incrementPosition(x, y) {

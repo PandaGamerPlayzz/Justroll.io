@@ -1,5 +1,8 @@
 import { Player } from './Classes/Player.js';
 
+import { LevelLoader } from './Classes/Levels/Level.js';
+import { Level_Lobby } from './Classes/Levels/Level_Lobby.js';
+
 const DOM_URL = window.URL || window.webkitURL || window;
 
 const queryString = window.location.search;
@@ -37,6 +40,8 @@ class Game {
             'onKeyUp': [],
             'onStep': []
         };
+
+        this.levelLoader = new LevelLoader(this, Level_Lobby);
 
         this.resize(width, height);
     }
@@ -87,6 +92,8 @@ class Game {
         if(this.isAnyKeyDown('d', 'D')) {
             this.player.incrementPosition(speed * dt, 0);
         }
+
+        this.levelLoader.update(dt);
     }
 
     draw(ctx) {
@@ -95,6 +102,8 @@ class Game {
             ctx.rect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = 'rgb(0, 0, 0)';
             ctx.fill();
+
+            this.levelLoader.draw(ctx);
 
             for(let [_, player] of Object.entries(this.players)) {
                 player.draw(ctx);
@@ -291,7 +300,7 @@ function CanvasResize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    if(game) game.resize(game, canvas.width, canvas.height);
+    if(game) game.resize(canvas.width, canvas.height);
 }
 
 CanvasResize();

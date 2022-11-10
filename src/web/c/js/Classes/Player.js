@@ -33,20 +33,22 @@ export class Player {
     }
 
     update(dt) {
-        if(this.game.isAnyKeyDown('w', 'W')) {
-            this.incrementPosition(0, -speed * dt);
-        }
-
-        if(this.game.isAnyKeyDown('a', 'A')) {
-            this.incrementPosition(-speed * dt, 0);
-        }
-
-        if(this.game.isAnyKeyDown('s', 'S')) {
-            this.incrementPosition(0, speed * dt);
-        }
+        if(this.game.clientId == this.clientId) {
+            if(this.game.isAnyKeyDown('w', 'W')) {
+                this.incrementPosition(0, -speed * dt);
+            }
     
-        if(this.game.isAnyKeyDown('d', 'D')) {
-            this.incrementPosition(speed * dt, 0);
+            if(this.game.isAnyKeyDown('a', 'A')) {
+                this.incrementPosition(-speed * dt, 0);
+            }
+    
+            if(this.game.isAnyKeyDown('s', 'S')) {
+                this.incrementPosition(0, speed * dt);
+            }
+        
+            if(this.game.isAnyKeyDown('d', 'D')) {
+                this.incrementPosition(speed * dt, 0);
+            }
         }
     }
 

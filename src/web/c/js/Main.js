@@ -218,6 +218,7 @@ function Main() {
 
     socket.on('connectionMade', (data) => {
        clientId = data.clientId;
+       game.clientId = clientId;
 
        socket.emit('joinServer', joinCode);
     }); 

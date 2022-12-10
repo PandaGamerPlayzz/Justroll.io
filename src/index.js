@@ -137,25 +137,29 @@ io.on('connection', (socket) => {
         socket.emit('serverJoined', JoinServer(clientId, serverCode, {
             randomRGB: randomRGB,
             x: 100,
-            y: 100
+            y: 100,
+            rotation: 0
         }));
     });
 
     socket.on('clientUpdate', (data) => {
         let server = servers[clients[clientId].currentServerCode];
 
-        if(server == undefined) return;
+        if(server === undefined) return;
+        if(server.clients[data.clientId] === undefined) return;
 
         switch(data.code) {
             case 'position':
                 server.clients[data.clientId].data.x = data.x;
                 server.clients[data.clientId].data.y = data.y;
+                server.clients[data.clientId].data.rotation = data.rotation;
 
                 socket.broadcast.emit('serverUpdate', {
                     code: 'position',
                     clientId: data.clientId,
                     x: data.x,
-                    y: data.y
+                    y: data.y,
+                    rotation: data.rotation
                 });
 
                 break;

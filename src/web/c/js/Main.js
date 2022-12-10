@@ -18,6 +18,12 @@ var joinCode;
 
 class Game {
     constructor(socket, width, height) {
+        // DEBUG PROPERTIES
+
+        this.showHitboxes = false;
+
+        // PROPERTIES
+
         this.pressedKeys = [];
         this.mouseDown = false;
         this.mouseX = 0;
@@ -59,6 +65,7 @@ class Game {
 
                     newPlayer.x = client.data.x;
                     newPlayer.y = client.data.y;
+                    newPlayer.rotation = client.data.rotation;
 
                     this.players[otherClientId] = newPlayer;
                     if(otherClientId == clientId) this.player = newPlayer;
@@ -211,6 +218,7 @@ function Main() {
 
                 client.data.x = game.players[data.clientId].x = data.x;
                 client.data.y = game.players[data.clientId].y = data.y;
+                client.data.rotation = game.players[data.clientId].rotation = data.rotation;
 
                 break;
         }

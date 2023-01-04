@@ -59,7 +59,7 @@ export class Player {
                 isMovingLeftOrRight = true;
             }
 
-            if(isMovingLeftOrRight == false) {
+            if(isMovingLeftOrRight == false && this.rotation != 0) {
                 this.rotation = 0;
                 this.sendPositionPacket();
             }

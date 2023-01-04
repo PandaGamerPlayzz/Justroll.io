@@ -36,24 +36,24 @@ export class Player {
             let isMovingLeftOrRight = false;
 
             // Up
-            if(this.game.isAnyKeyDown('w', 'W') && !this.game.isAnyKeyDown('s', 'S')) {
+            if(this.game.isAnyKeyDown('w', 'W', 'ArrowUp') && !this.game.isAnyKeyDown('s', 'S', 'ArrowDown')) {
                 this.incrementPosition(0, -speed * dt);
             }
     
             // Left
-            if(this.game.isAnyKeyDown('a', 'A') && !this.game.isAnyKeyDown('d', 'D')) {
+            if(this.game.isAnyKeyDown('a', 'A', 'ArrowLeft') && !this.game.isAnyKeyDown('d', 'D', 'ArrowRight')) {
                 this.rotation -= 45 * dt;
                 this.incrementPosition(-speed * dt, 0);
                 isMovingLeftOrRight = true;
             }
     
             // Down
-            if(this.game.isAnyKeyDown('s', 'S') && !this.game.isAnyKeyDown('w', 'W')) {
+            if(this.game.isAnyKeyDown('s', 'S', 'ArrowDown') && !this.game.isAnyKeyDown('w', 'W', 'ArrowUp')) {
                 this.incrementPosition(0, speed * dt);
             }
         
             // Right
-            if(this.game.isAnyKeyDown('d', 'D') && !this.game.isAnyKeyDown('a', 'A')) {
+            if(this.game.isAnyKeyDown('d', 'D', 'ArrowRight') && !this.game.isAnyKeyDown('a', 'A', 'ArrowLeft')) {
                 this.rotation += 45 * dt;
                 this.incrementPosition(speed * dt, 0);
                 isMovingLeftOrRight = true;

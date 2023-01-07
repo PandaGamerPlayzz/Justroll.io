@@ -43,6 +43,16 @@ http.listen(PORT, () => {
     console.log(`Server is running at port ${port}`);
 });
 
+const shuffleArray = (arr) => [...Array(arr.length)]
+    .map((_, i) => Math.floor(Math.random() * (i + 1)))
+    .reduce(
+        (shuffled, r, i) =>
+            shuffled.map((num, j) =>
+            j === i ? shuffled[r] : j === r ? shuffled[i] : num
+        ),
+    arr
+);
+
 function randrange(min, max) {
     return Math.floor(Math.random() * max) + min;
 }
@@ -51,7 +61,7 @@ function CreateServer(serverCode) {
     servers[serverCode] = {
         ownerClientId: null,
         serverCode: serverCode,
-        eg_colors: eg_colors,
+        eg_colors: JSON.parse(JSON.stringify(eg_colors)),
         clients: {}
     };
 
@@ -61,8 +71,8 @@ function CreateServer(serverCode) {
 function JoinServer(clientId, serverCode, clientData) {
     let server = servers[serverCode];
 
-    clientData.color = server.eg_colors[Math.floor(Math.random() * eg_colors.length)];
-    server.eg_colors.splice(server.eg_colors.indexOf(clientData.color), 1);
+    server.eg_colors = shuffleArray(server.eg_colors);
+    clientData.color = server.eg_colors.pop();
 
     server.clients[clientId] = {
         clientId: clientId,
@@ -81,7 +91,7 @@ function LeaveServer(clientId) {
     let server = servers[clients[clientId].currentServerCode];
 
     if(server !== undefined) {
-        server.eg_colors.push(server.clients[clientId].data.color);
+        if(eg_colors.includes(server.clients[clientId].data.color)) server.eg_colors.push(server.clients[clientId].data.color);
         delete server.clients[clientId];
 
         if(server.ownerClientId == clientId) {

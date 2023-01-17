@@ -12,7 +12,7 @@ const io = require('socket.io')(http);
 
 const EG_COLORS = ['Salmon', 'Cyan', 'Lime', 'Magenta', 'Purple', 'Blue', 'Yellow', 'Orange'];
 
-const UPDATE_RATE = 1000 / 500;
+const UPDATE_RATE = 1000 / 100;
 
 let lastClientId = 0;
 let clients = {};

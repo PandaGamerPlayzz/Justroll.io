@@ -1,3 +1,4 @@
+const UPDATE_RATE = 1000 / 100;
 const CHAT_TIME = 10;
 
 function getEgImages() {
@@ -31,7 +32,10 @@ export class Player {
         this.dy = 0;
         this.x = 0;
         this.y = 0;
-
+        
+        this.lastUpdate = null;
+        this.lastPositionUpdate = null;
+        this.updateQueue = [];
         this.messages = [];
 
         this.color = color;
@@ -49,41 +53,49 @@ export class Player {
             }
         }
 
-        this.x += this.dx;
-        this.y += this.dy;
+        this.x += this.dx * dt;
+        this.y += this.dy * dt;
+        this.dx /= 2;
+        this.dy /= 2;
+
+        if(this.dx < 1) this.dx = 0;
+        if(this.dy < 1) this.dy = 0;
 
         if(this.game.clientId == this.clientId) {
             let isMovingLeftOrRight = false;
 
             // Up
             if(this.game.isAnyKeyDown('w', 'W', 'ArrowUp') && !this.game.isAnyKeyDown('s', 'S', 'ArrowDown')) {
-                this.incrementPosition(0, -speed * dt);
+                this.dy = -speed;
             }
     
             // Left
             if(this.game.isAnyKeyDown('a', 'A', 'ArrowLeft') && !this.game.isAnyKeyDown('d', 'D', 'ArrowRight')) {
                 this.rotation -= 45 * dt;
-                this.incrementPosition(-speed * dt, 0);
+                this.dx = -speed;
                 isMovingLeftOrRight = true;
             }
     
             // Down
             if(this.game.isAnyKeyDown('s', 'S', 'ArrowDown') && !this.game.isAnyKeyDown('w', 'W', 'ArrowUp')) {
-                this.incrementPosition(0, speed * dt);
+                this.dy = speed;
             }
         
             // Right
             if(this.game.isAnyKeyDown('d', 'D', 'ArrowRight') && !this.game.isAnyKeyDown('a', 'A', 'ArrowLeft')) {
                 this.rotation += 45 * dt;
-                this.incrementPosition(speed * dt, 0);
+                this.dx = speed;
                 isMovingLeftOrRight = true;
             }
 
             if(isMovingLeftOrRight == false && this.rotation != 0) {
                 this.rotation = 0;
-                this.sendPositionPacket();
             }
         }
+
+        this.queuePositionPacket();
+
+        if(this.lastUpdate === null || Date.now() - this.lastUpdate > UPDATE_RATE) this.sendUpdates();
     }
 
     draw(ctx) {
@@ -161,7 +173,7 @@ export class Player {
         this.x += x;
         this.y += y;
 
-        this.sendPositionPacket();
+        this.queuePositionPacket();
     }
 
     sendMessage(messageString) {
@@ -186,5 +198,40 @@ export class Player {
             y: this.y,
             rotation: this.rotation
         });
+    }
+
+    queuePositionPacket() {
+        if(this !== this.game.player) return;
+        if(this.lastPositionUpdate !== null && this.x == this.lastPositionUpdate.x && this.y == this.lastPositionUpdate.y && this.rotation == this.lastPositionUpdate.rotation) return;
+
+        for(let i = 0; i < this.updateQueue.length; i++) {
+            let update = this.updateQueue[i];
+
+            if(update && update.code === 'position') this.updateQueue[i] = undefined;
+        }
+
+        this.lastPositionUpdate = {
+            code: 'position',
+            clientId: this.clientId,
+            x: this.x,
+            y: this.y,
+            rotation: this.rotation
+        };
+
+        this.updateQueue.push(this.lastPositionUpdate);
+    }
+
+    sendUpdates() {
+        let updates = JSON.parse(JSON.stringify(this.updateQueue)).filter(function(x) {
+            return x !== null && x !== undefined;
+        });
+
+        this.updateQueue = [];
+
+        for(let i = 0; i < updates.length; i++) {
+            this.game.socket.emit('clientUpdate', updates[i]);
+        }
+
+        this.lastUpdate = Date.now();
     }
 }

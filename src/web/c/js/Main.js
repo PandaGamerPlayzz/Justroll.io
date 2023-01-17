@@ -191,11 +191,21 @@ function GenerateJoinCode() {
     return code;
 }
 
+function GetValidJoinCode() {
+    let joinCode = urlParams.get('c') || GenerateJoinCode();
+
+    let validLength = joinCode.length === 7;
+    let hasDash = joinCode[3] === '-';
+    let hasValidCharacters = joinCode.match(/[A-Z-]+/g)[0] === joinCode;
+
+    if(!validLength || !hasDash || !hasValidCharacters) joinCode = GenerateJoinCode();
+
+    return joinCode
+}
+
 function Main() {
     socket = io();
-    joinCode = urlParams.get('c') || GenerateJoinCode();
-
-    if(joinCode.length !== 7 || joinCode[3] != '-' || joinCode.match(/[A-Z-]+/g)[0] !== joinCode) joinCode = GenerateJoinCode();
+    joinCode = GetValidJoinCode();
 
     game = app.game = new Game(socket, canvas.width, canvas.height);
 

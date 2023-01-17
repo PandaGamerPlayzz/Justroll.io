@@ -10,7 +10,9 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
-const eg_colors = ['Salmon', 'Cyan', 'Lime', 'Magenta', 'Purple', 'Blue', 'Yellow', 'Orange'];
+const EG_COLORS = ['Salmon', 'Cyan', 'Lime', 'Magenta', 'Purple', 'Blue', 'Yellow', 'Orange'];
+
+const UPDATE_RATE = 1000 / 500;
 
 let lastClientId = 0;
 let clients = {};
@@ -61,7 +63,7 @@ function CreateServer(serverCode) {
     servers[serverCode] = {
         ownerClientId: null,
         serverCode: serverCode,
-        eg_colors: JSON.parse(JSON.stringify(eg_colors)),
+        eg_colors: JSON.parse(JSON.stringify(EG_COLORS)),
         clients: {}
     };
 
@@ -91,7 +93,7 @@ function LeaveServer(clientId) {
     let server = servers[clients[clientId].currentServerCode];
 
     if(server !== undefined) {
-        if(eg_colors.includes(server.clients[clientId].data.color)) server.eg_colors.push(server.clients[clientId].data.color);
+        if(EG_COLORS.includes(server.clients[clientId].data.color)) server.eg_colors.push(server.clients[clientId].data.color);
         delete server.clients[clientId];
 
         if(server.ownerClientId == clientId) {
@@ -132,6 +134,7 @@ io.on('connection', (socket) => {
     lastClientId += 1;
 
     let randomRGB = [randrange(0, 255), randrange(0, 255), randrange(0, 255)];
+    let updateQueue = [];
 
     clients[clientId] = {
         socket: socket,
@@ -164,7 +167,13 @@ io.on('connection', (socket) => {
                 server.clients[data.clientId].data.y = data.y;
                 server.clients[data.clientId].data.rotation = data.rotation;
 
-                socket.broadcast.emit('serverUpdate', {
+                for(let i = 0; i < updateQueue.length; i++) {
+                    let update = updateQueue[i];
+
+                    if(update && update.clientId === data.clientId) updateQueue[i] = undefined;
+                }
+
+                updateQueue.push({
                     code: 'position',
                     clientId: data.clientId,
                     x: data.x,
@@ -181,4 +190,20 @@ io.on('connection', (socket) => {
 
         delete clients[clientId];
     });
+
+    function sendUpdates(i) {
+        let updates = JSON.parse(JSON.stringify(updateQueue)).filter(function(x) {
+            return x !== null && x !== undefined;
+        });
+
+        updateQueue = [];
+
+        for(let i = 0; i < updates.length; i++) {
+            socket.broadcast.emit('serverUpdate', updates[i]);
+        }
+
+        setTimeout(sendUpdates, UPDATE_RATE, i + 1);
+    }
+
+    sendUpdates(0);
 });

@@ -115,7 +115,7 @@ class Game {
             let func = element[0];
             let object = element[1];
 
-            func(game.mouseX, game.mouseY, game=game)
+            func(game.mouseX, game.mouseY, game=game);
         }
     }
 
@@ -124,7 +124,7 @@ class Game {
             let func = element[0];
             let object = element[1];
 
-            func(game.mouseX, game.mouseY, object=object)
+            func(game.mouseX, game.mouseY, object=object);
         }
     }
 
@@ -133,7 +133,7 @@ class Game {
             let func = element[0];
             let object = element[1];
 
-            func(game.mouseX, game.mouseY, object=object)
+            func(game.mouseX, game.mouseY, object=object);
         }
     }
 
@@ -142,7 +142,7 @@ class Game {
             let func = element[0];
             let object = element[1];
 
-            func(event, object=object)
+            func(event, object=object);
         }
     }
 
@@ -151,7 +151,7 @@ class Game {
             let func = element[0];
             let object = element[1];
 
-            func(event, object=object)
+            func(event, object=object);
         }
     }
 
@@ -162,13 +162,13 @@ class Game {
             let func = element[0];
             let object = element[1];
 
-            func(timestamp, object=object)
+            func(timestamp, object=object);
         }
 
         game.update(dt);
         game.draw(ctx);
 
-        this.lastTimestamp = timestamp
+        this.lastTimestamp = timestamp;
     }
 
     connect(functionName, callback, object, game=this) {

@@ -115,11 +115,11 @@ export class Player {
 
         // Render chat bubbles
 
-        for(let i = this.messages.length - 1; i >= 0; i--) {
-            let message = this.messages[i];
+        for(let i = 0; i < this.messages.length; i++) {
+            let message = this.messages.slice().reverse()[i];
             let messageString = message[0];
 
-            if(i === this.messages.length - 1) {
+            if(i === 0) {
                 let cx = x - 20;
                 let cy = y - 25 - height / 2;
 
@@ -142,8 +142,10 @@ export class Player {
             ctx.font = '30px Arial';
             let text = ctx.measureText(messageString);
 
+            let rectWidth = text.width > 40 ? text.width : 40;
+
             ctx.beginPath();
-            ctx.rect(x - 5 - (text.width / 2), y - (70 * (i + 1) - 15 * i) - height / 2, text.width + 10, 50);
+            ctx.rect(x - 5 - (rectWidth / 2), y - (70 * (i + 1) - 15 * i) - height / 2, rectWidth + 10, 50);
             ctx.fillStyle = 'rgb(255, 255, 255)';
             ctx.fill();
 
@@ -173,7 +175,7 @@ export class Player {
     }
 
     receiveMessage(messageString) {
-        this.messages.push([messageString, Date.now()]);
+        this.messages[this.messages.length] = [messageString, Date.now()];
     }
 
     sendPositionPacket() {

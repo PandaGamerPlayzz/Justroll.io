@@ -210,8 +210,6 @@ io.on('connection', (socket) => {
             socket.broadcast.emit('serverUpdate', updates[i]);
         }
 
-        // if(updates.length > 0) console.log(i, updates);
-
         setTimeout(sendUpdates, UPDATE_RATE, i + 1);
     }
 

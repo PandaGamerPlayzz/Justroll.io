@@ -186,7 +186,7 @@ function GenerateJoinCode() {
         if(i == 2) code += '-';
     }
 
-    window.location.href += '?c=' + code;
+    window.location.href = window.location.href.split('?')[0] + '?c=' + code;
 
     return code;
 }
@@ -194,6 +194,8 @@ function GenerateJoinCode() {
 function Main() {
     socket = io();
     joinCode = urlParams.get('c') || GenerateJoinCode();
+
+    if(joinCode.length !== 7 || joinCode[3] != '-' || joinCode.match(/[A-Z-]+/g)[0] !== joinCode) joinCode = GenerateJoinCode();
 
     game = app.game = new Game(socket, canvas.width, canvas.height);
 

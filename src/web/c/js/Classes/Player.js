@@ -1,3 +1,5 @@
+const CHAT_TIME = 10;
+
 function getEgImages() {
     let path = '/c/img/svg/Eg/';
     let img_names = ['Eg_White.svg', 'Eg_Salmon.svg', 'Eg_Cyan.svg', 'Eg_Lime.svg', 'Eg_Magenta.svg', 'Eg_Purple.svg', 'Eg_Blue.svg', 'Eg_Yellow.svg', 'Eg_Orange.svg'];
@@ -25,13 +27,31 @@ export class Player {
         this.sizeX = 118 * 0.65;
         this.sizeY = 150 * 0.65;
         this.rotation = 0;
+        this.dx = 0;
+        this.dy = 0;
         this.x = 0;
         this.y = 0;
+
+        this.messages = [];
 
         this.color = color;
     }
 
     update(dt) {
+        let now = Date.now();
+
+        for(let i = 0; i < this.messages.length; i++) {
+            let message = this.messages[i];
+
+            if(now - message[1] > 1000 * CHAT_TIME) {
+                this.messages.splice(i, 1);
+                i--;
+            }
+        }
+
+        this.x += this.dx;
+        this.y += this.dy;
+
         if(this.game.clientId == this.clientId) {
             let isMovingLeftOrRight = false;
 
@@ -73,6 +93,8 @@ export class Player {
         let width = this.sizeX;
         let height = this.sizeY;
 
+        // Render eg and hitbox
+
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(rotationInRadians);
@@ -90,6 +112,47 @@ export class Player {
             ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
             ctx.fill();
         }
+
+        // Render chat bubbles
+
+        for(let i = this.messages.length - 1; i >= 0; i--) {
+            let message = this.messages[i];
+            let messageString = message[0];
+
+            if(i === this.messages.length - 1) {
+                let cx = x - 20;
+                let cy = y - 25 - height / 2;
+
+                ctx.save();
+                ctx.translate(cx, cy);
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(40, 0);
+                ctx.lineTo(20, 17);
+                ctx.closePath();
+
+                ctx.fillStyle = 'rgb(255, 255, 255)';
+                ctx.fill();
+
+                ctx.translate(-cx, -cy);
+                ctx.restore();
+            }
+
+            ctx.font = '30px Arial';
+            let text = ctx.measureText(messageString);
+
+            ctx.beginPath();
+            ctx.rect(x - 5 - (text.width / 2), y - (70 * (i + 1) - 15 * i) - height / 2, text.width + 10, 50);
+            ctx.fillStyle = 'rgb(255, 255, 255)';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.font = '30px Arial';
+            ctx.fillStyle = 'rgb(0, 0, 0)';
+            ctx.textAlign = 'center';
+            ctx.fillText(messageString, x, y - (70 * (i + 1) - 15 * i) - 15);
+        }
     }
 
     incrementPosition(x, y) {
@@ -97,6 +160,20 @@ export class Player {
         this.y += y;
 
         this.sendPositionPacket();
+    }
+
+    sendMessage(messageString) {
+        this.game.socket.emit('clientUpdate', {
+            code: 'chat',
+            clientId: this.clientId,
+            messageString: messageString
+        });
+
+        this.receiveMessage(messageString);
+    }
+
+    receiveMessage(messageString) {
+        this.messages.push([messageString, Date.now()]);
     }
 
     sendPositionPacket() {

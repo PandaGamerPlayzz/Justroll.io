@@ -68,7 +68,7 @@ class Game {
                     newPlayer.rotation = client.data.rotation;
 
                     this.players[otherClientId] = newPlayer;
-                    if(otherClientId == clientId) this.player = newPlayer;
+                    if(otherClientId == clientId) this.player = app.player = newPlayer;
 
                     console.log('Player Joined:', newPlayer);
                 }
@@ -195,7 +195,7 @@ function Main() {
     socket = io();
     joinCode = urlParams.get('c') || GenerateJoinCode();
 
-    game = new Game(socket, canvas.width, canvas.height);
+    game = app.game = new Game(socket, canvas.width, canvas.height);
 
     // Socket events
 
@@ -211,6 +211,10 @@ function Main() {
         switch(data.code) {
             case 'full':
                 game.server = data.server;
+
+                break;
+            case 'chat':
+                game.players[data.clientId].receiveMessage(data.messageString);
 
                 break;
             case 'position':

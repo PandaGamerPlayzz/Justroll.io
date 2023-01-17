@@ -162,6 +162,14 @@ io.on('connection', (socket) => {
         if(server.clients[data.clientId] === undefined) return;
 
         switch(data.code) {
+            case 'chat':
+                updateQueue.push({
+                    code: 'chat',
+                    clientId: data.clientId,
+                    messageString: data.messageString
+                });
+
+                break;
             case 'position':
                 server.clients[data.clientId].data.x = data.x;
                 server.clients[data.clientId].data.y = data.y;
@@ -170,7 +178,7 @@ io.on('connection', (socket) => {
                 for(let i = 0; i < updateQueue.length; i++) {
                     let update = updateQueue[i];
 
-                    if(update && update.clientId === data.clientId) updateQueue[i] = undefined;
+                    if(update && update.code === 'position' && update.clientId === data.clientId) updateQueue[i] = undefined;
                 }
 
                 updateQueue.push({
@@ -201,6 +209,8 @@ io.on('connection', (socket) => {
         for(let i = 0; i < updates.length; i++) {
             socket.broadcast.emit('serverUpdate', updates[i]);
         }
+
+        // if(updates.length > 0) console.log(i, updates);
 
         setTimeout(sendUpdates, UPDATE_RATE, i + 1);
     }

@@ -51,6 +51,7 @@ export class Player {
         this.physicsObject.dx /= 1.015;
         this.physicsObject.dr /= 1.015;
 
+        // Check for level collisions
         for(let i = 0; i < this.game.levelLoader.currentLevel.physicsObjects.length; i++) {
             let levelObject = this.game.levelLoader.currentLevel.physicsObjects[i];
 
@@ -80,7 +81,7 @@ export class Player {
                 this.physicsObject.dy = (this.physicsObject.y + this.physicsObject.b) - (player.physicsObject.y + player.physicsObject.b);
 
                 this.canJump = true;
-        }
+            }
         }
 
         for(let i = 0; i < this.messages.length; i++) {

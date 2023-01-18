@@ -72,8 +72,6 @@ class Game {
 
                     this.players[otherClientId] = newPlayer;
                     if(otherClientId == clientId) this.player = app.player = newPlayer;
-
-                    console.log('Player Joined:', newPlayer);
                 }
             }
         }
@@ -84,7 +82,6 @@ class Game {
             player.update(dt);
 
             if(Object.keys(this.server.clients).includes(playerClientId.toString()) == false) {
-                console.log('Player Disconnected:', this.players[playerClientId]);
                 delete this.players[playerClientId];
             }
         }

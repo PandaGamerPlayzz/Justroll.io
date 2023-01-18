@@ -1,5 +1,10 @@
+import { EllipsePhysicsObject, collides } from './PhysicsObject.js';
+
 const UPDATE_RATE = 1000 / 100;
 const CHAT_TIME = 10;
+
+const SPEED = 35;
+const JUMP_POWER = 50;
 
 function getEgImages() {
     let path = '/c/img/svg/Eg/';
@@ -16,22 +21,19 @@ function getEgImages() {
 
 let eg_imgs = getEgImages();
 
-let speed = 35;
-
 export class Player {
     constructor(game, clientId, color='White') {
         this.game = game;
 
         this.eg_img = eg_imgs[`Eg_${color}.svg`].cloneNode(true);
+
+        this.physicsObject = new EllipsePhysicsObject(this.game, 118 * 0.65, 150 * 0.65);
+        this.physicsObject.elasticity = 0.5;
+        this.physicsObject.hasGravity = true;
+
+        this.canJump = false;
         
         this.clientId = clientId;
-        this.sizeX = 118 * 0.65;
-        this.sizeY = 150 * 0.65;
-        this.rotation = 0;
-        this.dx = 0;
-        this.dy = 0;
-        this.x = 0;
-        this.y = 0;
         
         this.lastUpdate = null;
         this.lastPositionUpdate = null;
@@ -44,6 +46,43 @@ export class Player {
     update(dt) {
         let now = Date.now();
 
+        this.physicsObject.update(dt);
+
+        this.physicsObject.dx /= 1.015;
+        this.physicsObject.dr /= 1.015;
+
+        for(let i = 0; i < this.game.levelLoader.currentLevel.physicsObjects.length; i++) {
+            let levelObject = this.game.levelLoader.currentLevel.physicsObjects[i];
+
+            let collision = collides(this.physicsObject, levelObject);
+            
+            if(collision) {
+                this.canJump = true;
+
+                while(collides(this.physicsObject, levelObject)) {
+                    this.physicsObject.y -= 0.25;
+                }
+
+                this.physicsObject.dy = -Math.abs(this.physicsObject.dy) * this.physicsObject.elasticity;
+            }
+        }
+
+        // Check for player collisions
+        for(let i = 0; i < Object.values(this.game.players).length; i++) {
+            let player = Object.values(this.game.players)[i];
+
+            if(player === this) continue;
+
+            let collision = collides(this.physicsObject, player.physicsObject);
+
+            if(collision) {
+                this.physicsObject.dx = (this.physicsObject.x + this.physicsObject.a) - (player.physicsObject.x + player.physicsObject.a);
+                this.physicsObject.dy = (this.physicsObject.y + this.physicsObject.b) - (player.physicsObject.y + player.physicsObject.b);
+
+                this.canJump = true;
+        }
+        }
+
         for(let i = 0; i < this.messages.length; i++) {
             let message = this.messages[i];
 
@@ -53,43 +92,23 @@ export class Player {
             }
         }
 
-        this.x += this.dx * dt;
-        this.y += this.dy * dt;
-        this.dx /= 2;
-        this.dy /= 2;
-
-        if(this.dx < 1) this.dx = 0;
-        if(this.dy < 1) this.dy = 0;
-
         if(this.game.clientId == this.clientId) {
-            let isMovingLeftOrRight = false;
-
-            // Up
-            if(this.game.isAnyKeyDown('w', 'W', 'ArrowUp') && !this.game.isAnyKeyDown('s', 'S', 'ArrowDown')) {
-                this.dy = -speed;
+            // Jump
+            if(this.canJump === true && this.game.isAnyKeyDown('w', 'W', ' ', 'ArrowUp')) {
+                this.canJump = false;
+                this.physicsObject.dy = -JUMP_POWER;
             }
     
             // Left
             if(this.game.isAnyKeyDown('a', 'A', 'ArrowLeft') && !this.game.isAnyKeyDown('d', 'D', 'ArrowRight')) {
-                this.rotation -= 45 * dt;
-                this.dx = -speed;
-                isMovingLeftOrRight = true;
-            }
-    
-            // Down
-            if(this.game.isAnyKeyDown('s', 'S', 'ArrowDown') && !this.game.isAnyKeyDown('w', 'W', 'ArrowUp')) {
-                this.dy = speed;
+                this.physicsObject.dr = -45;
+                this.physicsObject.dx = -SPEED;
             }
         
             // Right
             if(this.game.isAnyKeyDown('d', 'D', 'ArrowRight') && !this.game.isAnyKeyDown('a', 'A', 'ArrowLeft')) {
-                this.rotation += 45 * dt;
-                this.dx = speed;
-                isMovingLeftOrRight = true;
-            }
-
-            if(isMovingLeftOrRight == false && this.rotation != 0) {
-                this.rotation = 0;
+                this.physicsObject.dr = 45;
+                this.physicsObject.dx = SPEED;
             }
         }
 
@@ -99,13 +118,13 @@ export class Player {
     }
 
     draw(ctx) {
-        let rotationInRadians = this.rotation * Math.PI / 180;
-        let x = this.x + this.sizeX * 0.5;
-        let y = this.y + this.sizeY * 0.5
-        let width = this.sizeX;
-        let height = this.sizeY;
+        let rotationInRadians = this.physicsObject.rotation * Math.PI / 180;
+        let width = this.physicsObject.sizeX;
+        let height = this.physicsObject.sizeY;
+        let x = this.physicsObject.x + width * 0.5;
+        let y = this.physicsObject.y + height * 0.5
 
-        // Render eg and hitbox
+        // Render eg
 
         ctx.save();
         ctx.translate(x, y);
@@ -118,12 +137,7 @@ export class Player {
         ctx.translate(-x, -y);
         ctx.restore();
 
-        if(this.game.showHitboxes) {
-            ctx.beginPath();
-            ctx.ellipse(x, y, this.sizeX * 0.5, this.sizeY * 0.5, rotationInRadians, 0, 2 * Math.PI);
-            ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-            ctx.fill();
-        }
+        if(this.game.showHitboxes) this.physicsObject.drawHitbox(ctx);
 
         // Render chat bubbles
 
@@ -170,8 +184,8 @@ export class Player {
     }
 
     incrementPosition(x, y) {
-        this.x += x;
-        this.y += y;
+        this.physicsObject.x += x;
+        this.physicsObject.y += y;
 
         this.queuePositionPacket();
     }
@@ -190,19 +204,9 @@ export class Player {
         this.messages[this.messages.length] = [messageString, Date.now()];
     }
 
-    sendPositionPacket() {
-        this.game.socket.emit('clientUpdate', {
-            code: 'position',
-            clientId: this.clientId,
-            x: this.x,
-            y: this.y,
-            rotation: this.rotation
-        });
-    }
-
     queuePositionPacket() {
         if(this !== this.game.player) return;
-        if(this.lastPositionUpdate !== null && this.x == this.lastPositionUpdate.x && this.y == this.lastPositionUpdate.y && this.rotation == this.lastPositionUpdate.rotation) return;
+        if(this.lastPositionUpdate !== null && this.physicsObject.x == this.lastPositionUpdate.x && this.physicsObject.y == this.lastPositionUpdate.y && this.physicsObject.rotation == this.lastPositionUpdate.rotation) return;
 
         for(let i = 0; i < this.updateQueue.length; i++) {
             let update = this.updateQueue[i];
@@ -213,9 +217,12 @@ export class Player {
         this.lastPositionUpdate = {
             code: 'position',
             clientId: this.clientId,
-            x: this.x,
-            y: this.y,
-            rotation: this.rotation
+            x: this.physicsObject.x,
+            y: this.physicsObject.y,
+            rotation: this.physicsObject.rotation,
+            dx: this.physicsObject.dx,
+            dy: this.physicsObject.dy,
+            dr: this.physicsObject.dr
         };
 
         this.updateQueue.push(this.lastPositionUpdate);

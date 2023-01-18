@@ -21,6 +21,7 @@ class Game {
         // DEBUG PROPERTIES
 
         this.showHitboxes = false;
+        this.showPoints = false;
 
         // PROPERTIES
 
@@ -58,14 +59,16 @@ class Game {
     }
 
     update(dt) {
+        if(dt > 1) return;
+
         if(this.server !== null) {
             for(let [otherClientId, client] of Object.entries(this.server.clients)) {
                 if(!(otherClientId in this.players)) {
                     let newPlayer = new Player(this, otherClientId, client.data.color);
 
-                    newPlayer.x = client.data.x;
-                    newPlayer.y = client.data.y;
-                    newPlayer.rotation = client.data.rotation;
+                    newPlayer.physicsObject.x = client.data.x;
+                    newPlayer.physicsObject.y = client.data.y;
+                    newPlayer.physicsObject.rotation = client.data.rotation;
 
                     this.players[otherClientId] = newPlayer;
                     if(otherClientId == clientId) this.player = app.player = newPlayer;
@@ -99,6 +102,8 @@ class Game {
             for(let [_, player] of Object.entries(this.players)) {
                 player.draw(ctx);
             }
+
+            this.levelLoader.drawOnTop(ctx);
         }
     }
 
@@ -232,9 +237,12 @@ function Main() {
             case 'position':
                 let client = game.server.clients[data.clientId];
 
-                client.data.x = game.players[data.clientId].x = data.x;
-                client.data.y = game.players[data.clientId].y = data.y;
-                client.data.rotation = game.players[data.clientId].rotation = data.rotation;
+                client.data.x = game.players[data.clientId].physicsObject.x = data.x;
+                client.data.y = game.players[data.clientId].physicsObject.y = data.y;
+                client.data.rotation = game.players[data.clientId].physicsObject.rotation = data.rotation;
+                client.data.dx = game.players[data.clientId].physicsObject.dx = data.dx;
+                client.data.dy = game.players[data.clientId].physicsObject.dy = data.dy;
+                client.data.dr = game.players[data.clientId].physicsObject.dr = data.dr;
 
                 break;
         }

@@ -186,7 +186,10 @@ io.on('connection', (socket) => {
                     clientId: data.clientId,
                     x: data.x,
                     y: data.y,
-                    rotation: data.rotation
+                    rotation: data.rotation,
+                    dx: data.dx,
+                    dy: data.dy,
+                    dr: data.dr
                 });
 
                 break;

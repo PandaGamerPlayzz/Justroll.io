@@ -185,6 +185,11 @@ class Game {
             this.chatMessage = '';
         }
 
+        if(event.code == 'Escape') {
+            this.chatBarOpen = false;
+            this.chatMessage = '';
+        }
+
         if(event.code == 'Slash' && !this.chatBarOpen) {
             this.chatBarOpen = true;
         }

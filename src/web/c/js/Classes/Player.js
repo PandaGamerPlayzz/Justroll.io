@@ -3,7 +3,9 @@ import { EllipsePhysicsObject, collides } from './PhysicsObject.js';
 const UPDATE_RATE = 1000 / 100;
 const CHAT_TIME = 10;
 
-const SPEED = 35;
+const SPEED = 32.5;
+const ROTATION_SPEED = 32.5;
+const ACCELERATION = 0.25;
 const JUMP_POWER = 50;
 
 function getEgImages() {
@@ -104,14 +106,24 @@ export class Player {
     
             // Left
             if(this.game.isAnyKeyDown('a', 'A', 'ArrowLeft') && !this.game.isAnyKeyDown('d', 'D', 'ArrowRight')) {
-                this.physicsObject.dr = -45;
-                this.physicsObject.dx = -SPEED;
+                this.physicsObject.dr += -ROTATION_SPEED * ACCELERATION * dt;
+                // if(this.physicsObject.dr >= -ROTATION_SPEED / 2) this.physicsObject.dr = -ROTATION_SPEED / 2;
+                if(this.physicsObject.dr < -ROTATION_SPEED) this.physicsObject.dr = -ROTATION_SPEED;
+
+                this.physicsObject.dx += -SPEED * ACCELERATION * dt;
+                // if(this.physicsObject.dx >= -SPEED / 2) this.physicsObject.dx = -SPEED / 2;
+                if(this.physicsObject.dx < -SPEED) this.physicsObject.dx = -SPEED;
             }
         
             // Right
             if(this.game.isAnyKeyDown('d', 'D', 'ArrowRight') && !this.game.isAnyKeyDown('a', 'A', 'ArrowLeft')) {
-                this.physicsObject.dr = 45;
-                this.physicsObject.dx = SPEED;
+                this.physicsObject.dr += ROTATION_SPEED * ACCELERATION * dt;
+                // if(this.physicsObject.dr <= ROTATION_SPEED / 2) this.physicsObject.dr = ROTATION_SPEED / 2;
+                if(this.physicsObject.dr > ROTATION_SPEED) this.physicsObject.dr = ROTATION_SPEED;
+                
+                this.physicsObject.dx += SPEED * ACCELERATION * dt;
+                // if(this.physicsObject.dx <= SPEED / 2) this.physicsObject.dx = SPEED / 2;
+                if(this.physicsObject.dx > SPEED) this.physicsObject.dx = SPEED;
             }
         }
 

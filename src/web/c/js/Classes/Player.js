@@ -77,8 +77,10 @@ export class Player {
             let collision = collides(this.physicsObject, player.physicsObject);
 
             if(collision) {
-                this.physicsObject.dx = (this.physicsObject.x + this.physicsObject.a) - (player.physicsObject.x + player.physicsObject.a);
-                this.physicsObject.dy = (this.physicsObject.y + this.physicsObject.b) - (player.physicsObject.y + player.physicsObject.b);
+                this.physicsObject.dx = 0.55 * ((this.physicsObject.x + this.physicsObject.a) - (player.physicsObject.x + player.physicsObject.a));
+                this.physicsObject.dy = 0.55 * ((this.physicsObject.y + this.physicsObject.b) - (player.physicsObject.y + player.physicsObject.b));
+
+                this.physicsObject.dr = this.physicsObject.dx >= 0 ? 30 : -30;
 
                 this.canJump = true;
             }

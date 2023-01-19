@@ -190,7 +190,7 @@ class Game {
             this.chatMessage = '';
         }
 
-        if(event.code == 'Slash' && !this.chatBarOpen) {
+        if((event.code == 'Slash' || event.key == 't' || event.key == 'T') && !this.chatBarOpen) {
             this.chatBarOpen = true;
         }
 

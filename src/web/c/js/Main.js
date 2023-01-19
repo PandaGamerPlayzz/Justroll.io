@@ -16,6 +16,15 @@ var socket;
 var clientId;
 var joinCode;
 
+let chatBar = new Image();
+chatBar.src = '/c/img/svg/Gui/ChatBar/Bar.svg';
+
+let airplaneUnselected = new Image();
+airplaneUnselected.src = '/c/img/svg/Gui/ChatBar/AirplaneUnselected.svg';
+
+let airplaneSelected = new Image();
+airplaneSelected.src = '/c/img/svg/Gui/ChatBar/AirplaneSelected.svg';
+
 class Game {
     constructor(socket, width, height) {
         // DEBUG PROPERTIES
@@ -24,6 +33,9 @@ class Game {
         this.showPoints = false;
 
         // PROPERTIES
+
+        this.chatBarOpen = false;
+        this.chatMessage = '';
 
         this.pressedKeys = [];
         this.mouseDown = false;
@@ -101,6 +113,24 @@ class Game {
             }
 
             this.levelLoader.drawOnTop(ctx);
+
+            if(this.chatBarOpen) {
+                ctx.beginPath();
+                ctx.drawImage(chatBar, (this.width / 2) - (this.width / 1.9 / 2), this.height - (this.height / 48) - (this.height / 10.8), this.width / 1.9, this.height / 10.8);
+
+                let airplane = this.chatMessage.replaceAll(' ', '') === '' ? airplaneUnselected : airplaneSelected;
+
+                ctx.beginPath();
+                ctx.drawImage(airplane, (this.width / 2) + (this.width / 1.9 / 2) - (this.height / 10.8) - 10, this.height - (this.height / 48) - (this.height / 10.8), this.height / 10.8, this.height / 10.8);
+            
+                let messageString = this.chatMessage === '' ? 'Type Here...' : this.chatMessage;
+
+                ctx.beginPath();
+                ctx.font = `${this.height / 24}px Arial`;
+                ctx.fillStyle = this.chatMessage === '' ? 'rgba(30, 30, 30, 0.25)' : 'rgb(0, 0, 0)';
+                ctx.textAlign = 'start';
+                ctx.fillText(messageString, (this.width / 2) - (this.width / 1.9 / 2) + 15, this.height - (this.height / 48) - (this.height / 10.8 / 2) + (this.height / 24 / 4));
+            }
         }
     }
 
@@ -140,6 +170,25 @@ class Game {
     }
 
     onKeyDown(event, game=this) {
+        if(this.chatBarOpen) {
+            if(event.key.length === 1) {
+                this.chatMessage += event.key;
+            } else if(event.code == 'Backspace') {
+                this.chatMessage = this.chatMessage.slice(0, this.chatMessage.length - 1);
+            }
+        }
+
+        if(event.code == 'Enter' && this.chatBarOpen) {
+            this.chatBarOpen = false;
+
+            if(this.chatMessage.replaceAll(' ', '') !== '') this.player.sendMessage(this.chatMessage);
+            this.chatMessage = '';
+        }
+
+        if(event.code == 'Slash' && !this.chatBarOpen) {
+            this.chatBarOpen = true;
+        }
+
         for(let element of game.connections['onKeyDown']) {
             let func = element[0];
             let object = element[1];

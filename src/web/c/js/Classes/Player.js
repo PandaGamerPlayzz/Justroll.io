@@ -28,7 +28,7 @@ export class Player {
         this.eg_img = eg_imgs[`Eg_${color}.svg`].cloneNode(true);
 
         this.physicsObject = new EllipsePhysicsObject(this.game, 118 * 0.65, 150 * 0.65);
-        this.physicsObject.elasticity = 0.5;
+        this.physicsObject.elasticity = 0.35;
         this.physicsObject.hasGravity = true;
 
         this.canJump = false;
@@ -93,7 +93,7 @@ export class Player {
             }
         }
 
-        if(this.game.clientId == this.clientId) {
+        if(this.game.clientId == this.clientId && !this.game.chatBarOpen) {
             // Jump
             if(this.canJump === true && this.game.isAnyKeyDown('w', 'W', ' ', 'ArrowUp')) {
                 this.canJump = false;

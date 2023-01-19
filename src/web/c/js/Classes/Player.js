@@ -32,6 +32,7 @@ export class Player {
         this.physicsObject.hasGravity = true;
 
         this.canJump = false;
+        this.lastCollision = Date.now();
         
         this.clientId = clientId;
         
@@ -59,6 +60,7 @@ export class Player {
             
             if(collision) {
                 this.canJump = true;
+                this.lastCollision = Date.now();
 
                 while(collides(this.physicsObject, levelObject)) {
                     this.physicsObject.y -= 0.25;
@@ -81,8 +83,6 @@ export class Player {
                 this.physicsObject.dy = 0.55 * ((this.physicsObject.y + this.physicsObject.b) - (player.physicsObject.y + player.physicsObject.b));
 
                 this.physicsObject.dr = this.physicsObject.dx >= 0 ? 30 : -30;
-
-                this.canJump = true;
             }
         }
 
@@ -97,7 +97,7 @@ export class Player {
 
         if(this.game.clientId == this.clientId && !this.game.chatBarOpen) {
             // Jump
-            if(this.canJump === true && this.game.isAnyKeyDown('w', 'W', ' ', 'ArrowUp')) {
+            if(this.canJump === true && Date.now() - this.lastCollision < 250 && this.game.isAnyKeyDown('w', 'W', ' ', 'ArrowUp')) {
                 this.canJump = false;
                 this.physicsObject.dy = -JUMP_POWER;
             }

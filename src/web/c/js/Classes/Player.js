@@ -65,9 +65,15 @@ export class Player {
 
                 if(!this.movementKeyDown) {
                     let averageFriction = (this.physicsObject.friction + levelObject.friction) / 2
-                    
-                    this.physicsObject.dx /= 1 + averageFriction * dt;
-                    this.physicsObject.dr /= 1 + averageFriction * dt;
+                    let accelerationDueToFriction = -this.physicsObject.dx * averageFriction;
+
+                    this.physicsObject.dx = accelerationDueToFriction * dt + this.physicsObject.dx;
+                    this.physicsObject.dr = accelerationDueToFriction * dt + this.physicsObject.dr;
+                
+                    let minDelta = 0.5;
+
+                    if(-minDelta <= this.physicsObject.dx && this.physicsObject.dx <= minDelta) this.physicsObject.dx = 0
+                    if(-minDelta <= this.physicsObject.dr && this.physicsObject.dr <= minDelta) this.physicsObject.dr = 0
                 }
 
                 while(collides(this.physicsObject, levelObject)) {

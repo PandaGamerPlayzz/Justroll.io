@@ -5,7 +5,7 @@ const CHAT_TIME = 10;
 
 const SPEED = 32.5;
 const ROTATION_SPEED = 32.5;
-const ACCELERATION = 0.25;
+const ACCELERATION = 0.2;
 const JUMP_POWER = 50;
 
 function getEgImages() {
@@ -31,9 +31,11 @@ export class Player {
 
         this.physicsObject = new EllipsePhysicsObject(this.game, 118 * 0.65, 150 * 0.65);
         this.physicsObject.elasticity = 0.35;
+        this.physicsObject.friction = 0;
         this.physicsObject.hasGravity = true;
 
         this.canJump = false;
+        this.movementKeyDown = false;
         this.lastCollision = Date.now();
         
         this.clientId = clientId;
@@ -51,9 +53,6 @@ export class Player {
 
         this.physicsObject.update(dt);
 
-        this.physicsObject.dx /= 1.015;
-        this.physicsObject.dr /= 1.015;
-
         // Check for level collisions
         for(let i = 0; i < this.game.levelLoader.currentLevel.physicsObjects.length; i++) {
             let levelObject = this.game.levelLoader.currentLevel.physicsObjects[i];
@@ -64,8 +63,15 @@ export class Player {
                 this.canJump = true;
                 this.lastCollision = Date.now();
 
+                if(!this.movementKeyDown) {
+                    let averageFriction = (this.physicsObject.friction + levelObject.friction) / 2
+                    
+                    this.physicsObject.dx /= 1 + averageFriction * dt;
+                    this.physicsObject.dr /= 1 + averageFriction * dt;
+                }
+
                 while(collides(this.physicsObject, levelObject)) {
-                    this.physicsObject.y -= 0.25;
+                    this.physicsObject.y -= 0.05;
                 }
 
                 this.physicsObject.dy = -Math.abs(this.physicsObject.dy) * this.physicsObject.elasticity;
@@ -81,7 +87,7 @@ export class Player {
             let collision = collides(this.physicsObject, player.physicsObject);
 
             if(collision) {
-                if(!this.game.isAnyKeyDown('w', 'W', ' ', 'ArrowUp', 'a', 'A', 'ArrowLeft', 'd', 'D', 'ArrowRight')) this.physicsObject.dx = 0.55 * ((this.physicsObject.x + this.physicsObject.a) - (player.physicsObject.x + player.physicsObject.a));
+                if(!this.movementKeyDown) this.physicsObject.dx = 0.55 * ((this.physicsObject.x + this.physicsObject.a) - (player.physicsObject.x + player.physicsObject.a));
                 this.physicsObject.dy = 0.55 * ((this.physicsObject.y + this.physicsObject.b) - (player.physicsObject.y + player.physicsObject.b));
 
                 this.physicsObject.dr = this.physicsObject.dx >= 0 ? 30 : -30;
@@ -97,33 +103,35 @@ export class Player {
             }
         }
 
+        this.movementKeyDown = false;
         if(this.game.clientId == this.clientId && !this.game.chatBarOpen) {
             // Jump
             if(this.canJump === true && Date.now() - this.lastCollision < 250 && this.game.isAnyKeyDown('w', 'W', ' ', 'ArrowUp')) {
+                this.movementKeyDown = true;
                 this.canJump = false;
                 this.physicsObject.dy = -JUMP_POWER;
             }
     
             // Left
             if(this.game.isAnyKeyDown('a', 'A', 'ArrowLeft') && !this.game.isAnyKeyDown('d', 'D', 'ArrowRight')) {
-                this.physicsObject.dr += -ROTATION_SPEED * ACCELERATION * dt;
-                // if(this.physicsObject.dr >= -ROTATION_SPEED / 2) this.physicsObject.dr = -ROTATION_SPEED / 2;
-                if(this.physicsObject.dr < -ROTATION_SPEED) this.physicsObject.dr = -ROTATION_SPEED;
+                this.movementKeyDown = true;
+                
+                if(this.physicsObject.dr > -ROTATION_SPEED) this.physicsObject.dr += -ROTATION_SPEED * ACCELERATION * dt;
+                // if(this.physicsObject.dr < -ROTATION_SPEED) this.physicsObject.dr = -ROTATION_SPEED;
 
-                this.physicsObject.dx += -SPEED * ACCELERATION * dt;
-                // if(this.physicsObject.dx >= -SPEED / 2) this.physicsObject.dx = -SPEED / 2;
-                if(this.physicsObject.dx < -SPEED) this.physicsObject.dx = -SPEED;
+                if(this.physicsObject.dx > -SPEED) this.physicsObject.dx += -SPEED * ACCELERATION * dt;
+                // if(this.physicsObject.dx < -SPEED) this.physicsObject.dx = -SPEED;
             }
         
             // Right
             if(this.game.isAnyKeyDown('d', 'D', 'ArrowRight') && !this.game.isAnyKeyDown('a', 'A', 'ArrowLeft')) {
-                this.physicsObject.dr += ROTATION_SPEED * ACCELERATION * dt;
-                // if(this.physicsObject.dr <= ROTATION_SPEED / 2) this.physicsObject.dr = ROTATION_SPEED / 2;
-                if(this.physicsObject.dr > ROTATION_SPEED) this.physicsObject.dr = ROTATION_SPEED;
+                this.movementKeyDown = true;
                 
-                this.physicsObject.dx += SPEED * ACCELERATION * dt;
-                // if(this.physicsObject.dx <= SPEED / 2) this.physicsObject.dx = SPEED / 2;
-                if(this.physicsObject.dx > SPEED) this.physicsObject.dx = SPEED;
+                if(this.physicsObject.dr < ROTATION_SPEED) this.physicsObject.dr += ROTATION_SPEED * ACCELERATION * dt;
+                // if(this.physicsObject.dr > ROTATION_SPEED) this.physicsObject.dr = ROTATION_SPEED;
+                
+                if(this.physicsObject.dx < SPEED) this.physicsObject.dx += SPEED * ACCELERATION * dt;
+                // if(this.physicsObject.dx > SPEED) this.physicsObject.dx = SPEED;
             }
         }
 

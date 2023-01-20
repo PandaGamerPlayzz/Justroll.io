@@ -15,6 +15,7 @@ export class Level_Lobby extends Level {
         super(game);
 
         this.floorRect = new RectPhysicsObject(game, game.width, this.game.height * (250 / 1080));
+        this.floorRect.friction = 0.3;
         this.floorRect.x = 0;
         this.floorRect.y = this.game.height - this.game.height * (250 / 1080);
         this.floorRect.rotation = 0;

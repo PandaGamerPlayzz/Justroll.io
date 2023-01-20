@@ -92,6 +92,7 @@ export class PhysicsObject {
         this.hasGravity = false;
 
         this.elasticity = 1;
+        this.friction = 1;
         
         this.sizeX = sizeX;
         this.sizeY = sizeY;

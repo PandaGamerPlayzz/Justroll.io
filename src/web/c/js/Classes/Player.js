@@ -30,13 +30,14 @@ export class Player {
         this.eg_img = eg_imgs[`Eg_${color}.svg`].cloneNode(true);
 
         this.physicsObject = new EllipsePhysicsObject(this.game, 118 * 0.65, 150 * 0.65);
-        this.physicsObject.elasticity = 0.35;
+        this.physicsObject.elasticity = 0.4;
         this.physicsObject.friction = 0;
         this.physicsObject.hasGravity = true;
 
         this.canJump = false;
         this.movementKeyDown = false;
         this.lastCollision = Date.now();
+        this.wallCollision = null;
         
         this.clientId = clientId;
         
@@ -54,33 +55,53 @@ export class Player {
         this.physicsObject.update(dt);
 
         // Check for level collisions
+        this.wallCollision = null;
         for(let i = 0; i < this.game.levelLoader.currentLevel.physicsObjects.length; i++) {
             let levelObject = this.game.levelLoader.currentLevel.physicsObjects[i];
 
             let collision = collides(this.physicsObject, levelObject);
             
+            let averageFriction = (this.physicsObject.friction + levelObject.friction) / 2;
+            let averageElasticity = (this.physicsObject.elasticity + levelObject.elasticity) / 2;
+
             if(collision) {
-                this.canJump = true;
-                this.lastCollision = Date.now();
+                if(levelObject.collisionType == 'floor') {
+                    this.canJump = true;
+                    this.lastCollision = Date.now();
 
-                if(!this.movementKeyDown) {
-                    let averageFriction = (this.physicsObject.friction + levelObject.friction) / 2
-                    let accelerationDueToFriction = -this.physicsObject.dx * averageFriction;
+                    if(!this.movementKeyDown) {
+                        let accelerationDueToFriction = -this.physicsObject.dx * averageFriction;
 
-                    this.physicsObject.dx = accelerationDueToFriction * dt + this.physicsObject.dx;
-                    this.physicsObject.dr = accelerationDueToFriction * dt + this.physicsObject.dr;
-                
-                    let minDelta = 0.5;
+                        this.physicsObject.dx = accelerationDueToFriction * dt + this.physicsObject.dx;
+                        this.physicsObject.dr = accelerationDueToFriction * dt + this.physicsObject.dr;
+                    
+                        let minDelta = 0.5;
 
-                    if(-minDelta <= this.physicsObject.dx && this.physicsObject.dx <= minDelta) this.physicsObject.dx = 0
-                    if(-minDelta <= this.physicsObject.dr && this.physicsObject.dr <= minDelta) this.physicsObject.dr = 0
+                        if(-minDelta <= this.physicsObject.dx && this.physicsObject.dx <= minDelta) this.physicsObject.dx = 0
+                        if(-minDelta <= this.physicsObject.dr && this.physicsObject.dr <= minDelta) this.physicsObject.dr = 0
+                    }
+
+                    while(collides(this.physicsObject, levelObject)) {
+                        this.physicsObject.y -= 0.05;
+                    }
+
+                    this.physicsObject.dy = -Math.abs(this.physicsObject.dy) * averageElasticity;
+                } else if(levelObject.collisionType == 'wall') {
+                    let direction = levelObject.x < this.physicsObject.x ? -1 : 1;
+                    this.wallCollision = levelObject;
+
+                    while(collides(this.physicsObject, levelObject)) {
+                        this.physicsObject.x -= 0.05 * direction;
+                    }
+
+                    if(!this.movementKeyDown) {
+                        this.physicsObject.dx = -this.physicsObject.dx * averageElasticity;
+                        this.physicsObject.dr = -this.physicsObject.dr * averageElasticity;
+                    } else {
+                        this.physicsObject.dx = 0;
+                        this.physicsObject.dr = 0;
+                    }
                 }
-
-                while(collides(this.physicsObject, levelObject)) {
-                    this.physicsObject.y -= 0.05;
-                }
-
-                this.physicsObject.dy = -Math.abs(this.physicsObject.dy) * this.physicsObject.elasticity;
             }
         }
 
@@ -117,7 +138,10 @@ export class Player {
                 this.canJump = false;
                 this.physicsObject.dy = -JUMP_POWER;
             }
-    
+
+            let direction = 0;
+            if(this.wallCollision !== null) direction = this.wallCollision.x < this.physicsObject.x ? -1 : 1;
+            
             // Left
             if(this.game.isAnyKeyDown('a', 'A', 'ArrowLeft') && !this.game.isAnyKeyDown('d', 'D', 'ArrowRight')) {
                 this.movementKeyDown = true;

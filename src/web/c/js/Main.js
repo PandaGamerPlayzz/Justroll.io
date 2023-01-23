@@ -238,9 +238,10 @@ function GenerateJoinCode() {
 
     for(let i = 0; i < 6; i++) {
         code += characters.charAt(Math.floor(Math.random() * characters.length));
-
         if(i == 2) code += '-';
     }
+
+    if(code == 'NVR-GNA') code = GenerateJoinCode();
 
     window.location.href = window.location.href.split('?')[0] + '?c=' + code;
 
@@ -259,9 +260,40 @@ function GetValidJoinCode() {
     return joinCode
 }
 
+function RickRoll() {
+    let body = document.getElementsByTagName('body')[0];
+
+    let iframe = document.createElement('iframe');
+    iframe.id = 'rick';
+    iframe.type = 'text/html';
+    iframe.allowFullscreen = 'true';
+    iframe.src = 'https://www.youtube.com/embed/dQw4w9WgXcQ?mute=1&modestbranding=0&autoplay=1&autohide=1&rel=0&showinfo=0&controls=0&disablekb=1&enablejsapi=1&iv_load_policy=3&loop=1';
+
+    iframe.style.position = 'absolute';
+    iframe.style.zIndex = '1000';
+    iframe.style.left = '0px';
+    iframe.style.top = '0px';
+    iframe.style.width = '100vw';
+    iframe.style.height = '100vh';
+
+    let div = document.createElement('div');
+    div.style.position = 'absolute';
+    div.style.left = '0px';
+    div.style.top = '0px';
+    div.style.width = '100vw';
+    div.style.height = '100vh';
+    div.style.zIndex = '1001';
+
+    body.append(iframe, div);
+}
+
 function Main() {
     socket = io();
     joinCode = GetValidJoinCode();
+
+    if(joinCode == 'NVR-GNA') {
+        RickRoll();
+    }
 
     game = app.game = new Game(socket, canvas.width, canvas.height);
 

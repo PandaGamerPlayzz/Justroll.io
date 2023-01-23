@@ -241,7 +241,7 @@ function GenerateJoinCode() {
         if(i == 2) code += '-';
     }
 
-    if(code == 'NVR-GNA') code = GenerateJoinCode();
+    if(code == 'ANG-RVN') code = GenerateJoinCode();
 
     window.location.href = window.location.href.split('?')[0] + '?c=' + code;
 
@@ -267,7 +267,8 @@ function RickRoll() {
     iframe.id = 'rick';
     iframe.type = 'text/html';
     iframe.allowFullscreen = 'true';
-    iframe.src = 'https://www.youtube.com/embed/dQw4w9WgXcQ?mute=1&modestbranding=0&autoplay=1&autohide=1&rel=0&showinfo=0&controls=0&disablekb=1&enablejsapi=1&iv_load_policy=3&loop=1';
+    iframe.allow = 'autoplay;';
+    iframe.src = 'https://www.youtube.com/embed/dQw4w9WgXcQ?mute=0&modestbranding=0&autoplay=1&autohide=1&rel=0&showinfo=0&controls=0&disablekb=1&enablejsapi=1&iv_load_policy=3&loop=1';
 
     iframe.style.position = 'absolute';
     iframe.style.zIndex = '1000';
@@ -291,9 +292,7 @@ function Main() {
     socket = io();
     joinCode = GetValidJoinCode();
 
-    if(joinCode == 'NVR-GNA') {
-        RickRoll();
-    }
+    let hasRickRolled = false;
 
     game = app.game = new Game(socket, canvas.width, canvas.height);
 
@@ -350,6 +349,11 @@ function Main() {
     canvas.addEventListener('mousemove', (event) => RelayMouse(event, game.onMouseMove));
 
     canvas.addEventListener('mousedown', (event) => {
+        if(joinCode == 'ANG-RVN' && hasRickRolled == false) {
+            hasRickRolled = true;
+            RickRoll();
+        }
+
         game.mouseDown = true;
         RelayMouse(event, game.onMouseDown);
     });
@@ -360,6 +364,11 @@ function Main() {
     });
 
     window.addEventListener('keydown', (event) => {
+        if(joinCode == 'ANG-RVN' && hasRickRolled == false) {
+            hasRickRolled = true;
+            RickRoll();
+        }
+
         if(!game.pressedKeys.includes(event.key)) game.pressedKeys.push(event.key);
 
         game.onKeyDown(event, game=game);

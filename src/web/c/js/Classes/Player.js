@@ -52,7 +52,29 @@ export class Player {
     update(dt) {
         let now = Date.now();
 
+        this.physicsObject.dr = this.physicsObject.dx;
         this.physicsObject.update(dt);
+
+        // Check for player collisions
+        for(let i = 0; i < Object.values(this.game.players).length; i++) {
+            let player = Object.values(this.game.players)[i];
+
+            if(player === this) continue;
+
+            let collision = collides(this.physicsObject, player.physicsObject);
+
+            if(collision) {
+                if(!this.movementKeyDown) this.physicsObject.dx = 0.55 * ((this.physicsObject.x + this.physicsObject.a) - (player.physicsObject.x + player.physicsObject.a));
+                this.physicsObject.dy = 0.55 * ((this.physicsObject.y + this.physicsObject.b) - (player.physicsObject.y + player.physicsObject.b));
+
+                this.physicsObject.dr = this.physicsObject.dx >= 0 ? 30 : -30;
+
+                while(collides(this.physicsObject, player.physicsObject)) {
+                    this.physicsObject.x += 0.05 * ((this.physicsObject.x + this.physicsObject.a) - (player.physicsObject.x + player.physicsObject.a));
+                    this.physicsObject.y += 0.05 * ((this.physicsObject.y + this.physicsObject.b) - (player.physicsObject.y + player.physicsObject.b));
+                }
+            }
+        }
 
         // Check for level collisions
         this.wallCollision = null;
@@ -102,22 +124,6 @@ export class Player {
                         this.physicsObject.dr = 0;
                     }
                 }
-            }
-        }
-
-        // Check for player collisions
-        for(let i = 0; i < Object.values(this.game.players).length; i++) {
-            let player = Object.values(this.game.players)[i];
-
-            if(player === this) continue;
-
-            let collision = collides(this.physicsObject, player.physicsObject);
-
-            if(collision) {
-                if(!this.movementKeyDown) this.physicsObject.dx = 0.55 * ((this.physicsObject.x + this.physicsObject.a) - (player.physicsObject.x + player.physicsObject.a));
-                this.physicsObject.dy = 0.55 * ((this.physicsObject.y + this.physicsObject.b) - (player.physicsObject.y + player.physicsObject.b));
-
-                this.physicsObject.dr = this.physicsObject.dx >= 0 ? 30 : -30;
             }
         }
 

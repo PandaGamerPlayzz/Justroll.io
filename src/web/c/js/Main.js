@@ -338,8 +338,8 @@ function Main() {
             case 'position':
                 let client = game.server.clients[data.clientId];
 
-                client.data.x = game.players[data.clientId].physicsObject.x = data.x;
-                client.data.y = game.players[data.clientId].physicsObject.y = data.y;
+                client.data.x = game.players[data.clientId].physicsObject.x = data.x / 100 * game.width;
+                client.data.y = game.players[data.clientId].physicsObject.y = data.y / 100 * game.height;
                 client.data.rotation = game.players[data.clientId].physicsObject.rotation = data.rotation;
                 client.data.dx = game.players[data.clientId].physicsObject.dx = data.dx;
                 client.data.dy = game.players[data.clientId].physicsObject.dy = data.dy;

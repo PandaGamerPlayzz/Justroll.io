@@ -275,11 +275,14 @@ export class Player {
             if(update && update.code === 'position') this.updateQueue[i] = undefined;
         }
 
+        let x = (this.physicsObject.x + this.physicsObject.sizeX * 0.5) / this.game.width * 100;
+        let y = (this.physicsObject.y + this.physicsObject.sizeY * 0.5) / this.game.height * 100;
+
         this.lastPositionUpdate = {
             code: 'position',
             clientId: this.clientId,
-            x: this.physicsObject.x,
-            y: this.physicsObject.y,
+            x: x,
+            y: y,
             rotation: this.physicsObject.rotation,
             dx: this.physicsObject.dx,
             dy: this.physicsObject.dy,

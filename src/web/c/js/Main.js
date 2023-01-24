@@ -85,8 +85,6 @@ class Game {
             let x = (this.player.physicsObject.x + this.player.physicsObject.sizeX * 0.5) / this.width * 100 % 100;
             let offset = (hangingPixelsX / 2);
 
-            console.log(hangingPixelsX, offset, x);
-
             if(x < this.levelLoader.currentLevel.levelMin + 50) {
                 canvas.style.left = `calc(50% + ${offset - (offset * (x % 50 / 50))}px)`;
             } else if(x > this.levelLoader.currentLevel.levelMax - 50) {

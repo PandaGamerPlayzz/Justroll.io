@@ -1,3 +1,5 @@
+import { getDrawValues } from './Utils.js';
+
 import { Player } from './Classes/Player.js';
 
 import { LevelLoader } from './Classes/Levels/Level.js';
@@ -42,6 +44,9 @@ class Game {
         this.mouseX = 0;
         this.mouseY = 0;
 
+        this.cameraX = 0;
+        this.cameraY = 0;
+
         this.lastTimestamp = 0;
 
         this.socket = socket;
@@ -72,6 +77,22 @@ class Game {
 
     update(dt) {
         if(dt > 1) return;
+
+        let hangingPixelsX = this.width - window.innerWidth;
+
+        canvas.style.left = '50%';
+        if(this.player && this.player.physicsObject && hangingPixelsX > 0) {
+            let x = (this.player.physicsObject.x + this.player.physicsObject.sizeX * 0.5) / this.width * 100 % 100;
+            let offset = (hangingPixelsX / 2);
+
+            console.log(hangingPixelsX, offset, x);
+
+            if(x < this.levelLoader.currentLevel.levelMin + 50) {
+                canvas.style.left = `calc(50% + ${offset - (offset * (x % 50 / 50))}px)`;
+            } else if(x > this.levelLoader.currentLevel.levelMax - 50) {
+                canvas.style.left = `calc(50% - ${offset * (x % 50 / 50)}px)`;
+            }
+        }
 
         if(this.server !== null) {
             for(let [otherClientId, client] of Object.entries(this.server.clients)) {
@@ -406,8 +427,16 @@ function GetMousePos(event) {
 }
 
 function CanvasResize() {
-    canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    canvas.width = window.innerHeight * (16 / 9);
+
+    // if(window.innerWidth > window.innerHeight) {
+    //     canvas.height = window.innerHeight;
+    //     canvas.width = window.innerHeight * (16 / 9);
+    // } else {
+    //     canvas.width = window.innerWidth;
+    //     canvas.height = window.innerWidth * (9 / 16);
+    // }
 
     if(game) game.resize(canvas.width, canvas.height);
 }

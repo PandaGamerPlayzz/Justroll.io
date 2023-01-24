@@ -1,3 +1,5 @@
+import { getDrawValues } from '../Utils.js';
+
 import { EllipsePhysicsObject, collides } from './PhysicsObject.js';
 
 const UPDATE_RATE = 1000 / 100;
@@ -7,6 +9,9 @@ const SPEED = 32.5;
 const ROTATION_SPEED = 32.5;
 const ACCELERATION = 0.2;
 const JUMP_POWER = 50;
+
+const ELASTICITY = 0.4;
+const FRICTION = 0.2;
 
 function getEgImages() {
     let path = '/c/img/svg/Eg/';
@@ -30,8 +35,8 @@ export class Player {
         this.eg_img = eg_imgs[`Eg_${color}.svg`].cloneNode(true);
 
         this.physicsObject = new EllipsePhysicsObject(this.game, 118 * 0.65, 150 * 0.65);
-        this.physicsObject.elasticity = 0.4;
-        this.physicsObject.friction = 0;
+        this.physicsObject.elasticity = ELASTICITY;
+        this.physicsObject.friction = FRICTION;
         this.physicsObject.hasGravity = true;
 
         this.canJump = false;
@@ -153,10 +158,7 @@ export class Player {
                 this.movementKeyDown = true;
                 
                 if(this.physicsObject.dr > -ROTATION_SPEED) this.physicsObject.dr += -ROTATION_SPEED * ACCELERATION * dt;
-                // if(this.physicsObject.dr < -ROTATION_SPEED) this.physicsObject.dr = -ROTATION_SPEED;
-
                 if(this.physicsObject.dx > -SPEED) this.physicsObject.dx += -SPEED * ACCELERATION * dt;
-                // if(this.physicsObject.dx < -SPEED) this.physicsObject.dx = -SPEED;
             }
         
             // Right
@@ -164,10 +166,7 @@ export class Player {
                 this.movementKeyDown = true;
                 
                 if(this.physicsObject.dr < ROTATION_SPEED) this.physicsObject.dr += ROTATION_SPEED * ACCELERATION * dt;
-                // if(this.physicsObject.dr > ROTATION_SPEED) this.physicsObject.dr = ROTATION_SPEED;
-                
                 if(this.physicsObject.dx < SPEED) this.physicsObject.dx += SPEED * ACCELERATION * dt;
-                // if(this.physicsObject.dx > SPEED) this.physicsObject.dx = SPEED;
             }
         }
 
@@ -178,10 +177,13 @@ export class Player {
 
     draw(ctx) {
         let rotationInRadians = this.physicsObject.rotation * Math.PI / 180;
-        let width = this.physicsObject.sizeX;
-        let height = this.physicsObject.sizeY;
-        let x = this.physicsObject.x + width * 0.5;
-        let y = this.physicsObject.y + height * 0.5
+        let [x, y, width, height] = getDrawValues(
+            this.game, 
+            (this.physicsObject.x + this.physicsObject.sizeX * 0.5) / this.game.width * 100, 
+            (this.physicsObject.y + this.physicsObject.sizeY * 0.5) / this.game.height * 100, 
+            this.physicsObject.sizeX / this.game.width * 100, 
+            this.physicsObject.sizeY / this.game.height * 100
+        );
 
         // Render eg
 

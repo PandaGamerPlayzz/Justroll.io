@@ -1,3 +1,5 @@
+import { getDrawValues } from '../../Utils.js';
+
 import { Level } from './Level.js';
 import { RectPhysicsObject } from '../PhysicsObject.js';
 
@@ -13,6 +15,8 @@ lobbyForeground.src = '/c/img/svg/Levels/Lobby/Lobby_Foreground.svg';
 export class Level_Lobby extends Level {
     constructor(game) {
         super(game);
+
+        this.levelMax = 100;
 
         this.floorRect = new RectPhysicsObject(game, game.width, this.game.height * (250 / 1080));
         this.floorRect.friction = 0.5;
@@ -65,11 +69,14 @@ export class Level_Lobby extends Level {
     }
 
     draw(ctx) {
-        ctx.beginPath();
-        ctx.drawImage(lobbyBackground, 0, 0, this.game.width, this.game.height);
+        let [x, y, sizeX, sizeY] = getDrawValues(this.game, 0, 0, 100, 100);
+        // console.log(x, y, sizeX, sizeY);
 
         ctx.beginPath();
-        ctx.drawImage(lobbyForeground, 0, 0, this.game.width, this.game.height);
+        ctx.drawImage(lobbyBackground, x, y, sizeX, sizeY);
+
+        ctx.beginPath();
+        ctx.drawImage(lobbyForeground, x, y, sizeX, sizeY);
     }
 
     drawOnTop(ctx) {

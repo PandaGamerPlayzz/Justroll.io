@@ -3,6 +3,9 @@ export class Level {
         this.levelLoader = levelLoader;
         this.game = levelLoader.game;
 
+        this.levelMin = 0;
+        this.levelMax = 100;
+
         this.physicsObjects = [];
     }
 

@@ -18,6 +18,16 @@ var socket;
 var clientId;
 var joinCode;
 
+var musicStarted = false;
+var hasRickRolled = false;
+
+let trackIntro = new Audio('/c/sound/music/track_intro.mp3');
+trackIntro.volume = 0.1;
+
+let trackLoop = new Audio('/c/sound/music/track_loop.mp3');
+trackLoop.volume = 0.1;
+trackLoop.loop = true;
+
 let chatBar = new Image();
 chatBar.src = '/c/img/svg/Gui/ChatBar/Bar.svg';
 
@@ -280,6 +290,9 @@ function GetValidJoinCode() {
 }
 
 function RickRoll() {
+    if(hasRickRolled) return;
+    hasRickRolled = true;
+
     let body = document.getElementsByTagName('body')[0];
 
     let iframe = document.createElement('iframe');
@@ -307,11 +320,23 @@ function RickRoll() {
     body.append(iframe, div);
 }
 
+function StartMusic() {
+    if(musicStarted) return;
+    musicStarted = true;
+
+    console.log("Playing intro...");
+
+    trackIntro.play();
+
+    trackIntro.addEventListener('ended', () => {
+        console.log("Playing loop...");
+        trackLoop.play();
+    });
+}
+
 function Main() {
     socket = io();
     joinCode = GetValidJoinCode();
-
-    let hasRickRolled = false;
 
     game = app.game = new Game(socket, canvas.width, canvas.height);
 
@@ -368,9 +393,10 @@ function Main() {
     canvas.addEventListener('mousemove', (event) => RelayMouse(event, game.onMouseMove));
 
     canvas.addEventListener('mousedown', (event) => {
-        if(joinCode == 'ANG-RVN' && hasRickRolled == false) {
-            hasRickRolled = true;
+        if(joinCode == 'ANG-RVN') {
             RickRoll();
+        } else {
+            StartMusic()
         }
 
         game.mouseDown = true;
@@ -383,9 +409,10 @@ function Main() {
     });
 
     window.addEventListener('keydown', (event) => {
-        if(joinCode == 'ANG-RVN' && hasRickRolled == false) {
-            hasRickRolled = true;
+        if(joinCode == 'ANG-RVN') {
             RickRoll();
+        } else {
+            StartMusic()
         }
 
         if(!game.pressedKeys.includes(event.key)) game.pressedKeys.push(event.key);

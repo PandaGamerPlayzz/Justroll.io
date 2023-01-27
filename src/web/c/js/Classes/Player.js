@@ -28,6 +28,18 @@ function getEgImages() {
 
 let eg_imgs = getEgImages();
 
+let jumpSFX = new Audio('/c/sound/sfx/jump.mp3');
+jumpSFX.volume = 0.1;
+
+let playerToGroundSFX = new Audio('/c/sound/sfx/player_to_ground.mp3');
+playerToGroundSFX.volume = 0.1;
+
+let playerToPlayerSFX = new Audio('/c/sound/sfx/player_to_player.mp3');
+playerToPlayerSFX.volume = 0.1;
+
+let portalSFX = new Audio('/c/sound/sfx/portal.mp3');
+portalSFX.volume = 0.1;
+
 export class Player {
     constructor(game, clientId, color='White') {
         this.game = game;
@@ -42,6 +54,7 @@ export class Player {
         this.canJump = false;
         this.movementKeyDown = false;
         this.lastCollision = Date.now();
+        this.lastPlayerCollision = Date.now();
         this.wallCollision = null;
         
         this.clientId = clientId;
@@ -69,6 +82,10 @@ export class Player {
             let collision = collides(this.physicsObject, player.physicsObject);
 
             if(collision) {
+                if(Date.now() - this.lastPlayerCollision > 350) playerToPlayerSFX.play();;
+
+                this.lastPlayerCollision = Date.now();
+
                 if(!this.movementKeyDown) this.physicsObject.dx = 0.55 * ((this.physicsObject.x + this.physicsObject.a) - (player.physicsObject.x + player.physicsObject.a));
                 this.physicsObject.dy = 0.55 * ((this.physicsObject.y + this.physicsObject.b) - (player.physicsObject.y + player.physicsObject.b));
 
@@ -92,9 +109,11 @@ export class Player {
             let averageElasticity = (this.physicsObject.elasticity + levelObject.elasticity) / 2;
 
             if(collision) {
+                if(Date.now() - this.lastCollision > 350) playerToGroundSFX.play();
+                this.lastCollision = Date.now();
+
                 if(levelObject.collisionType == 'floor') {
                     this.canJump = true;
-                    this.lastCollision = Date.now();
 
                     if(!this.movementKeyDown) {
                         let accelerationDueToFriction = -this.physicsObject.dx * averageFriction;
@@ -132,6 +151,7 @@ export class Player {
             }
         }
 
+        // Delete old messages
         for(let i = 0; i < this.messages.length; i++) {
             let message = this.messages[i];
 
@@ -145,6 +165,8 @@ export class Player {
         if(this.game.clientId == this.clientId && !this.game.chatBarOpen) {
             // Jump
             if(this.canJump === true && Date.now() - this.lastCollision < 250 && this.game.isAnyKeyDown('w', 'W', ' ', 'ArrowUp')) {
+                jumpSFX.play();
+
                 this.movementKeyDown = true;
                 this.canJump = false;
                 this.physicsObject.dy = -JUMP_POWER;
